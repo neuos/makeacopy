@@ -22,6 +22,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
@@ -33,6 +34,8 @@ import de.schliweb.makeacopy.R;
 import de.schliweb.makeacopy.data.library.ScansRepository;
 import de.schliweb.makeacopy.databinding.FragmentExportBinding;
 import de.schliweb.makeacopy.ui.camera.CameraViewModel;
+import de.schliweb.makeacopy.ui.crop.CropAspectRatio;
+import de.schliweb.makeacopy.ui.crop.CropPrefsHelper;
 import de.schliweb.makeacopy.ui.crop.CropViewModel;
 import de.schliweb.makeacopy.ui.export.session.CompletedScan;
 import de.schliweb.makeacopy.ui.ocr.OCRViewModel;
@@ -964,7 +967,8 @@ public class ExportFragment extends Fragment {
     if (curSize == 0) {
       // First time opening Export in this session: seed with current cropped bitmap if available
       if (initBmp != null) {
-        CompletedScan initial = newInMemoryPage(initBmp, currentUserRotation());
+        CompletedScan initial =
+            newInMemoryPage(initBmp, currentUserRotation(), currentPhysicalSizeMm(context));
         // Align the session id used by Review autosave to this export session id
         alignReviewSessionId(initial);
         activeSessionPageIndex = 0;
@@ -980,7 +984,8 @@ public class ExportFragment extends Fragment {
       // User initiated adding another page and returned here after new capture/crop.
       // Avoid adding duplicates if the same bitmap reference is already present
       if (initBmp != null && !containsBitmap(currentPages, initBmp)) {
-        CompletedScan added = newInMemoryPage(initBmp, currentUserRotation());
+        CompletedScan added =
+            newInMemoryPage(initBmp, currentUserRotation(), currentPhysicalSizeMm(context));
         // Keep SessionIds aligned to the last added page (so Review autosave per-page stays
         // consistent)
         alignReviewSessionId(added);
@@ -1002,6 +1007,19 @@ public class ExportFragment extends Fragment {
 
   /** A not yet persisted page that only lives in memory (orientation mode "metadata"). */
   private static CompletedScan newInMemoryPage(Bitmap bmp, int rotationDeg) {
+    return newInMemoryPage(bmp, rotationDeg, null);
+  }
+
+  /**
+   * A not yet persisted page that only lives in memory (orientation mode "metadata"). {@code
+   * physicalSizeMm}, when non-null, is the {@code {widthMm, heightMm}} the page was cropped to via
+   * a {@link CropAspectRatio} physical-size preset (e.g. {@link CropAspectRatio#ID1_CARD}) —
+   * carried through to export so the PDF page can place it at true size.
+   */
+  private static CompletedScan newInMemoryPage(
+      Bitmap bmp, int rotationDeg, @Nullable double[] physicalSizeMm) {
+    Double physicalWidthMm = physicalSizeMm != null ? physicalSizeMm[0] : null;
+    Double physicalHeightMm = physicalSizeMm != null ? physicalSizeMm[1] : null;
     return new CompletedScan(
         UUID.randomUUID().toString(),
         null,
@@ -1014,13 +1032,48 @@ public class ExportFragment extends Fragment {
         bmp.getHeight(),
         bmp,
         1,
-        "metadata");
+        "metadata",
+        null,
+        CompletedScan.NO_PDF_PAGE,
+        null,
+        physicalWidthMm,
+        physicalHeightMm);
   }
 
   /** The user rotation from CropViewModel, normalized to [0, 360). */
   private int currentUserRotation() {
     Integer deg = cropViewModel.getUserRotationDegrees().getValue();
     return deg != null ? ((deg % 360) + 360) % 360 : 0;
+  }
+
+  /**
+   * The {@code {widthMm, heightMm}} of the {@link CropAspectRatio} that was active for the crop
+   * step this page just came from, or {@code null} if it wasn't one of the known-document
+   * physical-size presets (e.g. {@link CropAspectRatio#ID1_CARD}). Reads the same
+   * last-selected-aspect preference the crop step itself just resolved to perform the warp.
+   */
+  @Nullable
+  private static double[] currentPhysicalSizeMm(Context context) {
+    return CropPrefsHelper.getLastAspect(context).physicalSizeMm();
+  }
+
+  /**
+   * The physical size (mm) for a single-page export: prefers the actual page's stored {@link
+   * CompletedScan#physicalWidthMm()}/{@link CompletedScan#physicalHeightMm()} (correct even if
+   * export happens well after crop, e.g. a resumed session), falling back to the current crop
+   * aspect preference only if no page is available yet.
+   */
+  @Nullable
+  private static double[] singlePagePhysicalSizeMm(
+      @Nullable List<CompletedScan> pages, Context context) {
+    if (pages != null && !pages.isEmpty() && pages.get(0) != null) {
+      CompletedScan p = pages.get(0);
+      if (p.physicalWidthMm() != null && p.physicalHeightMm() != null) {
+        return new double[] {p.physicalWidthMm(), p.physicalHeightMm()};
+      }
+      return null;
+    }
+    return currentPhysicalSizeMm(context);
   }
 
   private void alignReviewSessionId(CompletedScan page) {
@@ -1654,7 +1707,8 @@ public class ExportFragment extends Fragment {
           pageFormat,
           cleanupMode,
           textLayerMode,
-          MultiColumnOcrPrefs.isEnabled(appContext));
+          MultiColumnOcrPrefs.isEnabled(appContext),
+          singlePagePhysicalSizeMm(pgsForPreset, appContext));
     }
 
     Log.d(TAG, "performExport: Creating PDF for multipage session (streaming)");
@@ -1763,6 +1817,14 @@ public class ExportFragment extends Fragment {
         pageWords = currentPageWords;
       }
       return pageWords;
+    }
+
+    @Override
+    @Nullable
+    public double[] getPhysicalSizeMm(int index) {
+      CompletedScan s = pageSnapshot.get(index);
+      if (s == null || s.physicalWidthMm() == null || s.physicalHeightMm() == null) return null;
+      return new double[] {s.physicalWidthMm(), s.physicalHeightMm()};
     }
 
     @Override
@@ -2623,7 +2685,12 @@ public class ExportFragment extends Fragment {
                                   it.heightPx(),
                                   it.inMemoryBitmap(),
                                   persisted.schemaVersion(),
-                                  persisted.orientationMode());
+                                  persisted.orientationMode(),
+                                  it.sourceType(),
+                                  it.pdfPageIndex(),
+                                  it.pageStatus(),
+                                  it.physicalWidthMm(),
+                                  it.physicalHeightMm());
                           exportSessionViewModel.updateAt(i, updated);
                           break;
                         }

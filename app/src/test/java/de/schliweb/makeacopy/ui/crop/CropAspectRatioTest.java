@@ -76,4 +76,45 @@ public class CropAspectRatioTest {
       }
     }
   }
+
+  @Test
+  public void physicalSizeMm_knownDocumentPresets_returnExactMm() {
+    assertEquals(85.60, CropAspectRatio.ID1_CARD.physicalSizeMm()[0], EPS);
+    assertEquals(53.98, CropAspectRatio.ID1_CARD.physicalSizeMm()[1], EPS);
+    assertEquals(89.0, CropAspectRatio.BUSINESS_CARD.physicalSizeMm()[0], EPS);
+    assertEquals(51.0, CropAspectRatio.BUSINESS_CARD.physicalSizeMm()[1], EPS);
+    assertEquals(125.0, CropAspectRatio.PASSPORT_TD3.physicalSizeMm()[0], EPS);
+    assertEquals(88.0, CropAspectRatio.PASSPORT_TD3.physicalSizeMm()[1], EPS);
+  }
+
+  @Test
+  public void physicalSizeMm_everyOtherEntry_returnsNull() {
+    for (CropAspectRatio v : CropAspectRatio.values()) {
+      switch (v) {
+        case ID1_CARD:
+        case BUSINESS_CARD:
+        case PASSPORT_TD3:
+          break;
+        default:
+          assertNull("expected null physicalSizeMm() for " + v, v.physicalSizeMm());
+      }
+    }
+  }
+
+  @Test
+  public void cornerRadiusMm_onlyId1Card_isNonZero() {
+    assertEquals(3.18, CropAspectRatio.ID1_CARD.cornerRadiusMm(), EPS);
+    for (CropAspectRatio v : CropAspectRatio.values()) {
+      if (v != CropAspectRatio.ID1_CARD) {
+        assertEquals("expected square corners for " + v, 0.0, v.cornerRadiusMm(), EPS);
+      }
+    }
+  }
+
+  @Test
+  public void shortOverLong_physicalSizePresets_derivedFromMmPair() {
+    assertEquals(53.98 / 85.60, CropAspectRatio.ID1_CARD.shortOverLong(), EPS);
+    assertEquals(51.0 / 89.0, CropAspectRatio.BUSINESS_CARD.shortOverLong(), EPS);
+    assertEquals(88.0 / 125.0, CropAspectRatio.PASSPORT_TD3.shortOverLong(), EPS);
+  }
 }

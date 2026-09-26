@@ -53,7 +53,9 @@ public record CompletedScan(
     @Nullable String orientationMode,
     @Nullable String sourceType,
     int pdfPageIndex,
-    @Nullable String pageStatus) {
+    @Nullable String pageStatus,
+    @Nullable Double physicalWidthMm,
+    @Nullable Double physicalHeightMm) {
 
   /** Source type for pages captured with the camera (default for legacy entries). */
   public static final String SOURCE_CAMERA = "camera";
@@ -138,6 +140,55 @@ public record CompletedScan(
       // re-startable via OCR_PENDING.
       pageStatus = (ocrTextPath != null) ? STATUS_OCR_COMPLETE : STATUS_OCR_PENDING;
     }
+    // Known-document physical size (e.g. ID1_CARD): a size needs both dimensions or neither.
+    if (physicalWidthMm == null
+        || physicalHeightMm == null
+        || !(physicalWidthMm > 0.0)
+        || !(physicalHeightMm > 0.0)) {
+      physicalWidthMm = null;
+      physicalHeightMm = null;
+    }
+  }
+
+  /**
+   * Backward-compatible constructor matching the pre-physical-size signature (the canonical shape
+   * before {@link #physicalWidthMm} / {@link #physicalHeightMm} were added). Delegates to the
+   * canonical constructor with both defaulting to {@code null} (no known physical size).
+   */
+  public CompletedScan(
+      String id,
+      @Nullable String filePath,
+      int rotationDeg,
+      @Nullable String ocrTextPath,
+      @Nullable String ocrFormat,
+      @Nullable String thumbPath,
+      long createdAt,
+      int widthPx,
+      int heightPx,
+      @Nullable Bitmap inMemoryBitmap,
+      int schemaVersion,
+      @Nullable String orientationMode,
+      @Nullable String sourceType,
+      int pdfPageIndex,
+      @Nullable String pageStatus) {
+    this(
+        id,
+        filePath,
+        rotationDeg,
+        ocrTextPath,
+        ocrFormat,
+        thumbPath,
+        createdAt,
+        widthPx,
+        heightPx,
+        inMemoryBitmap,
+        schemaVersion,
+        orientationMode,
+        sourceType,
+        pdfPageIndex,
+        pageStatus,
+        null,
+        null);
   }
 
   /**
@@ -197,6 +248,36 @@ public record CompletedScan(
         orientationMode,
         sourceType,
         pdfPageIndex,
-        pageStatus);
+        pageStatus,
+        physicalWidthMm,
+        physicalHeightMm);
+  }
+
+  /**
+   * Returns a copy with the given known-document physical size in mm (e.g. from {@link
+   * de.schliweb.makeacopy.ui.crop.CropAspectRatio#physicalSizeMm()}), or {@code null}/{@code null}
+   * to clear it; all other fields are preserved. See the compact constructor for normalization
+   * (a size needs both dimensions or neither).
+   */
+  public CompletedScan withPhysicalSizeMm(
+      @Nullable Double physicalWidthMm, @Nullable Double physicalHeightMm) {
+    return new CompletedScan(
+        id,
+        filePath,
+        rotationDeg,
+        ocrTextPath,
+        ocrFormat,
+        thumbPath,
+        createdAt,
+        widthPx,
+        heightPx,
+        inMemoryBitmap,
+        schemaVersion,
+        orientationMode,
+        sourceType,
+        pdfPageIndex,
+        pageStatus,
+        physicalWidthMm,
+        physicalHeightMm);
   }
 }

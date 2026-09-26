@@ -161,7 +161,12 @@ public class RegistryCleaner {
                     s.heightPx(),
                     s.inMemoryBitmap(),
                     s.schemaVersion(),
-                    s.orientationMode());
+                    s.orientationMode(),
+                    s.sourceType(),
+                    s.pdfPageIndex(),
+                    s.pageStatus(),
+                    s.physicalWidthMm(),
+                    s.physicalHeightMm());
             try {
               reg.remove(s.id());
             } catch (IOException ignore) {

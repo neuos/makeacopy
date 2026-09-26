@@ -220,7 +220,9 @@ public final class CompletedScansRegistry {
         mode,
         e.sourceType,
         e.pdfPageIndex,
-        e.pageStatus);
+        e.pageStatus,
+        e.physicalWidthMm,
+        e.physicalHeightMm);
   }
 
   /**
@@ -232,21 +234,25 @@ public final class CompletedScansRegistry {
    *     preserving all metadata and file path properties.
    */
   private CompletedScanEntry fromRuntime(CompletedScan s) {
-    return new CompletedScanEntry(
-        s.id(),
-        s.filePath(),
-        s.rotationDeg(),
-        s.ocrTextPath(),
-        s.ocrFormat(),
-        s.thumbPath(),
-        s.createdAt(),
-        s.widthPx(),
-        s.heightPx(),
-        s.schemaVersion(),
-        s.orientationMode(),
-        s.sourceType(),
-        s.pdfPageIndex(),
-        s.pageStatus());
+    CompletedScanEntry e =
+        new CompletedScanEntry(
+            s.id(),
+            s.filePath(),
+            s.rotationDeg(),
+            s.ocrTextPath(),
+            s.ocrFormat(),
+            s.thumbPath(),
+            s.createdAt(),
+            s.widthPx(),
+            s.heightPx(),
+            s.schemaVersion(),
+            s.orientationMode(),
+            s.sourceType(),
+            s.pdfPageIndex(),
+            s.pageStatus());
+    e.physicalWidthMm = s.physicalWidthMm();
+    e.physicalHeightMm = s.physicalHeightMm();
+    return e;
   }
 
   // ===== Persistence =====

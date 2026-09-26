@@ -37,6 +37,11 @@ public class CompletedScanEntry {
   @Nullable public String sourceType; // "camera" | "image" | "pdf"; null implies "camera"
   public int pdfPageIndex; // only meaningful when sourceType == "pdf"; otherwise -1/0 (legacy)
   @Nullable public String pageStatus; // e.g. "IMPORTED" | "OCR_COMPLETE"; null → derived
+  // Known-document physical size in mm (e.g. an ISO/IEC 7810 ID-1 card); both null unless the
+  // page was cropped via a CropAspectRatio physical-size preset. Plain fields (not a constructor
+  // param) since this is a mutable Gson DTO — see CompletedScansRegistry.toRuntime/fromRuntime.
+  @Nullable public Double physicalWidthMm;
+  @Nullable public Double physicalHeightMm;
 
   public CompletedScanEntry() {}
 

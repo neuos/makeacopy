@@ -994,7 +994,30 @@ public class CropFragment extends Fragment {
       de.schliweb.makeacopy.utils.image.DewarpModel dewarpModel) {
     final String LP = CROP_LOG;
     CropAspectRatio sel = CropPrefsHelper.getLastAspect(requireContext());
-    if (sel == CropAspectRatio.ORIGINAL) {
+    double[] physicalSizeMm = sel.physicalSizeMm();
+    if (physicalSizeMm != null) {
+      // Known-document presets (ID1_CARD, BUSINESS_CARD, PASSPORT_TD3) are always rigid/flat, so
+      // curved dewarping never applies here regardless of `dewarpModel` — warp straight to the
+      // item's exact real-world pixel size, then cosmetically round the corners if the preset
+      // calls for it (ID1_CARD only; business cards and passport pages are square-cornered).
+      int targetWidthPx = OpenCVUtils.mmToPxAtPhysicalSizeDpi(physicalSizeMm[0]);
+      int targetHeightPx = OpenCVUtils.mmToPxAtPhysicalSizeDpi(physicalSizeMm[1]);
+      android.util.Log.d(
+          TAG,
+          LP
+              + "performCrop: aspect="
+              + sel
+              + " → FIXED_SIZE "
+              + targetWidthPx
+              + "x"
+              + targetHeightPx
+              + "px");
+      Bitmap warped =
+          OpenCVUtils.applyPerspectiveCorrectionFixedSize(
+              fullResSource, cornersForSource, targetWidthPx, targetHeightPx);
+      float cornerRadiusPx = (float) OpenCVUtils.mmToPxAtPhysicalSizeDpi(sel.cornerRadiusMm());
+      return OpenCVUtils.applyRoundedCornerMask(warped, cornerRadiusPx);
+    } else if (sel == CropAspectRatio.ORIGINAL) {
       if (dewarpModel != null) {
         // Issue #91: the legacy heuristic has no WarpMode counterpart; use AUTO_PROJECTIVE
         // for dewarping so the curved selection is honored under aspect=ORIGINAL as well.
@@ -1400,6 +1423,9 @@ public class CropFragment extends Fragment {
       new CropAspectRatio[] {
         CropAspectRatio.AUTO,
         CropAspectRatio.ORIGINAL,
+        CropAspectRatio.ID1_CARD,
+        CropAspectRatio.BUSINESS_CARD,
+        CropAspectRatio.PASSPORT_TD3,
         CropAspectRatio.A4,
         CropAspectRatio.A5,
         CropAspectRatio.A3,
@@ -1958,6 +1984,12 @@ public class CropFragment extends Fragment {
         return getString(R.string.crop_aspect_auto);
       case ORIGINAL:
         return getString(R.string.crop_aspect_original);
+      case ID1_CARD:
+        return getString(R.string.crop_aspect_id1_card);
+      case BUSINESS_CARD:
+        return getString(R.string.crop_aspect_business_card);
+      case PASSPORT_TD3:
+        return getString(R.string.crop_aspect_passport_td3);
       case A3:
         return getString(R.string.crop_aspect_a3);
       case A4:

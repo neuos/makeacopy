@@ -77,7 +77,9 @@ public final class SessionOcrUpdater {
                   persisted.orientationMode(),
                   persisted.sourceType(),
                   persisted.pdfPageIndex(),
-                  persisted.pageStatus());
+                  persisted.pageStatus(),
+                  persisted.physicalWidthMm(),
+                  persisted.physicalHeightMm());
           sessionVM.updateAt(i, updated);
           break;
         }

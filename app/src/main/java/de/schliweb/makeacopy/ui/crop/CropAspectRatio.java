@@ -37,12 +37,28 @@ public enum CropAspectRatio {
   US_LETTER,
   /** US Legal, 8.5 : 14. */
   LEGAL,
+  /**
+   * ISO/IEC 7810 ID-1 (EU ID cards, driving licences, payment cards since ~2013). 85.60 x
+   * 53.98mm, rounded corners. Unlike the other fixed entries this also carries an absolute
+   * physical size (see {@link #physicalSizeMm()}) — the crop warps to this exact size in pixels
+   * at {@code OpenCVUtils.PHYSICAL_SIZE_DPI}, not just this ratio.
+   */
+  ID1_CARD,
+  /** Common business card size, 89 x 51mm. Square corners (unlike {@link #ID1_CARD}). */
+  BUSINESS_CARD,
+  /** ICAO Doc 9303 TD3 passport bio page, 125 x 88mm. Square corners. */
+  PASSPORT_TD3,
   /** User-defined ratio; the actual numbers are stored via {@link CropPrefsHelper}. */
   CUSTOM;
 
   private static final double DIN_A = 1.0 / Math.sqrt(2.0); // ≈ 0.7071067811865476
   private static final double LETTER = 8.5 / 11.0; // ≈ 0.7727272727272727
   private static final double LEGAL_R = 8.5 / 14.0; // ≈ 0.6071428571428571
+
+  private static final double[] ID1_CARD_MM = {85.60, 53.98};
+  private static final double ID1_CARD_CORNER_RADIUS_MM = 3.18; // mid of ISO spec's 2.88-3.48mm
+  private static final double[] BUSINESS_CARD_MM = {89.0, 51.0};
+  private static final double[] PASSPORT_TD3_MM = {125.0, 88.0};
 
   /**
    * Returns the short/long edge ratio in {@code (0, 1]} for fixed entries. For {@link #AUTO},
@@ -51,6 +67,10 @@ public enum CropAspectRatio {
    */
   @Nullable
   public Double shortOverLong() {
+    double[] mm = physicalSizeMm();
+    if (mm != null) {
+      return Math.min(mm[0], mm[1]) / Math.max(mm[0], mm[1]);
+    }
     switch (this) {
       case A3:
       case A4:
@@ -66,6 +86,33 @@ public enum CropAspectRatio {
       default:
         return null;
     }
+  }
+
+  /**
+   * Returns the {@code {widthMm, heightMm}} absolute physical size for the known-document
+   * presets ({@link #ID1_CARD}, {@link #BUSINESS_CARD}, {@link #PASSPORT_TD3}), or {@code null}
+   * for every other entry (those only ever enforce a ratio, never an absolute size).
+   */
+  @Nullable
+  public double[] physicalSizeMm() {
+    switch (this) {
+      case ID1_CARD:
+        return ID1_CARD_MM;
+      case BUSINESS_CARD:
+        return BUSINESS_CARD_MM;
+      case PASSPORT_TD3:
+        return PASSPORT_TD3_MM;
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * Returns the corner radius in mm to cosmetically round the warped output to, or {@code 0} for
+   * entries with square corners (including every non-physical-size entry).
+   */
+  public double cornerRadiusMm() {
+    return this == ID1_CARD ? ID1_CARD_CORNER_RADIUS_MM : 0.0;
   }
 
   /**

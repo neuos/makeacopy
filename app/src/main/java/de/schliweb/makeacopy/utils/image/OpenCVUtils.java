@@ -359,25 +359,86 @@ public final class OpenCVUtils {
               computeWarpTargetSize(corners, originalBitmap.getWidth(), originalBitmap.getHeight());
           break;
       }
-      if (!isSafeMode()) {
-        Log.d(TAG, "Using OpenCV warpPerspective");
-        Mat warped = warpPerspectiveSafe(mat, corners, targetSize, Core.BORDER_CONSTANT);
-        try {
-          Bitmap output =
-              Bitmap.createBitmap(
-                  (int) targetSize.width, (int) targetSize.height, Bitmap.Config.ARGB_8888);
-          Utils.matToBitmap(warped, output);
-          return output;
-        } finally {
-          release(warped);
-        }
-      } else {
-        Log.d(TAG, "Using Android Matrix warp fallback");
-        return warpPerspectiveWithMatrix(originalBitmap, corners, targetSize);
-      }
+      return warpToTargetSize(mat, originalBitmap, corners, targetSize);
     } finally {
       release(mat);
     }
+  }
+
+  /**
+   * Shared safe-mode/matrix-fallback warp used by both {@link #applyPerspectiveCorrection} and
+   * {@link #applyPerspectiveCorrectionFixedSize} once a target {@link Size} has been decided.
+   */
+  private static Bitmap warpToTargetSize(
+      Mat mat, Bitmap originalBitmap, Point[] corners, Size targetSize) {
+    if (!isSafeMode()) {
+      Log.d(TAG, "Using OpenCV warpPerspective");
+      Mat warped = warpPerspectiveSafe(mat, corners, targetSize, Core.BORDER_CONSTANT);
+      try {
+        Bitmap output =
+            Bitmap.createBitmap(
+                (int) targetSize.width, (int) targetSize.height, Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(warped, output);
+        return output;
+      } finally {
+        release(warped);
+      }
+    } else {
+      Log.d(TAG, "Using Android Matrix warp fallback");
+      return warpPerspectiveWithMatrix(originalBitmap, corners, targetSize);
+    }
+  }
+
+  /**
+   * Warps the selection to an absolute target pixel size, ignoring the quad's own proportions or
+   * the source photo's resolution (upscaling if needed) — used for known-document presets ({@link
+   * CropAspectRatio#physicalSizeMm()}) where the caller has already computed the exact pixel
+   * dimensions for a known real-world size, e.g. via {@link #mmToPxAtPhysicalSizeDpi}.
+   *
+   * @param original source bitmap
+   * @param corners four corners of the selection (TL, TR, BR, BL)
+   * @param targetWidthPx exact output width in pixels
+   * @param targetHeightPx exact output height in pixels
+   * @return the warped bitmap at exactly {@code targetWidthPx x targetHeightPx}, or {@code
+   *     original} when corners are invalid
+   */
+  public static Bitmap applyPerspectiveCorrectionFixedSize(
+      Bitmap original, Point[] corners, int targetWidthPx, int targetHeightPx) {
+    if (corners == null || corners.length != 4) return original;
+    if (targetWidthPx <= 0 || targetHeightPx <= 0) return original;
+    Bitmap bitmapForOpenCv = ensureBitmapToMatCompatible(original);
+    Mat mat = new Mat();
+    try {
+      Utils.bitmapToMat(bitmapForOpenCv, mat);
+      Size targetSize = new Size(targetWidthPx, targetHeightPx);
+      return warpToTargetSize(mat, original, corners, targetSize);
+    } finally {
+      release(mat);
+    }
+  }
+
+  /**
+   * Cosmetically clips a bitmap's corners to a rounded rectangle by clearing the outside-the-arc
+   * pixels to transparent. Pure Android graphics (alpha masking), not an OpenCV operation. Used to
+   * apply a known document preset's real corner radius (e.g. {@link CropAspectRatio#ID1_CARD}'s
+   * ISO/IEC 7810 rounding) after {@link #applyPerspectiveCorrectionFixedSize} has produced a sharp
+   * rectangle at the item's true outer size.
+   *
+   * @param bmp source bitmap, assumed to already be exactly the card's true pixel size
+   * @param radiusPx corner radius in pixels; a value {@code <= 0} returns {@code bmp} unchanged
+   */
+  public static Bitmap applyRoundedCornerMask(Bitmap bmp, float radiusPx) {
+    if (bmp == null || radiusPx <= 0f) return bmp;
+    int w = bmp.getWidth();
+    int h = bmp.getHeight();
+    Bitmap output = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(output);
+    Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    RectF rect = new RectF(0, 0, w, h);
+    canvas.drawRoundRect(rect, radiusPx, radiusPx, paint);
+    paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+    canvas.drawBitmap(bmp, 0, 0, paint);
+    return output;
   }
 
   /** Sagitta (px) below which the curved model is treated as straight (perspective fallback). */
@@ -2012,7 +2073,25 @@ public final class OpenCVUtils {
     /** v3.7.1 pixel-distance heuristic, no projective correction. */
     LEGACY_HEURISTIC,
     /** Enforce a user-supplied short/long edge ratio. */
-    FIXED_RATIO
+    FIXED_RATIO,
+    /** Enforce an absolute target pixel size. See {@link #applyPerspectiveCorrectionFixedSize}. */
+    FIXED_SIZE
+  }
+
+  /**
+   * Fixed DPI used to convert a known document's real-world millimeter size (e.g. an
+   * ISO/IEC 7810 ID-1 card) into a target pixel size for {@link #applyPerspectiveCorrectionFixedSize}.
+   * 300 DPI matches this app's existing {@code PdfQualityPreset.HIGH} export convention, so a card
+   * cropped at this DPI and later placed on a PDF page at true size (72pt/in ÷ this DPI) reproduces
+   * at exactly its real-world dimensions.
+   */
+  public static final int PHYSICAL_SIZE_DPI = 300;
+
+  private static final double MM_PER_INCH = 25.4;
+
+  /** Converts a millimeter length to a pixel length at {@link #PHYSICAL_SIZE_DPI}. */
+  public static int mmToPxAtPhysicalSizeDpi(double mm) {
+    return Math.round((float) (mm / MM_PER_INCH * PHYSICAL_SIZE_DPI));
   }
 
   /**

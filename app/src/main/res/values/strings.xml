@@ -505,6 +505,9 @@
     <string name="crop_aspect_label">Aspect ratio</string>
     <string name="crop_aspect_auto">Auto (recommended)</string>
     <string name="crop_aspect_original">Keep original (no aspect correction)</string>
+    <string name="crop_aspect_id1_card">ID card (85.6 × 54mm)</string>
+    <string name="crop_aspect_business_card">Business card (89 × 51mm)</string>
+    <string name="crop_aspect_passport_td3">Passport page (125 × 88mm)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

@@ -269,7 +269,8 @@ public class PdfCreator {
         pageFormat,
         cleanupMode,
         textLayerMode,
-        false);
+        false,
+        null);
   }
 
   /**
@@ -296,6 +297,49 @@ public class PdfCreator {
       DocumentCleanupMode cleanupMode,
       TextLayerMode textLayerMode,
       boolean multiColumn) {
+    return createSearchablePdf(
+        context,
+        bitmap,
+        words,
+        outputUri,
+        jpegQuality,
+        convertToGrayscale,
+        convertToBlackWhite,
+        targetDpi,
+        bwMode,
+        pageFormat,
+        cleanupMode,
+        textLayerMode,
+        multiColumn,
+        null);
+  }
+
+  /**
+   * Variant of {@link #createSearchablePdf(Context, Bitmap, List, Uri, int, boolean, boolean, int,
+   * BwMode, PageFormat, DocumentCleanupMode, TextLayerMode, boolean)} that places the image on the
+   * page at its true real-world size instead of scaling it to fit the page.
+   *
+   * @param physicalSizeMm {@code {widthMm, heightMm}} of the source bitmap's real-world size (see
+   *     {@code de.schliweb.makeacopy.ui.crop.CropAspectRatio#physicalSizeMm()}); the placement
+   *     scale is derived directly from {@code widthMm} and the bitmap's own pixel width, so this
+   *     works regardless of what DPI the bitmap was actually rendered at. {@code null} keeps the
+   *     existing scale-to-fit-page behavior.
+   */
+  public static Uri createSearchablePdf(
+      Context context,
+      Bitmap bitmap,
+      List<RecognizedWord> words,
+      Uri outputUri,
+      int jpegQuality,
+      boolean convertToGrayscale,
+      boolean convertToBlackWhite,
+      int targetDpi,
+      BwMode bwMode,
+      PageFormat pageFormat,
+      DocumentCleanupMode cleanupMode,
+      TextLayerMode textLayerMode,
+      boolean multiColumn,
+      @androidx.annotation.Nullable double[] physicalSizeMm) {
     Log.d(
         TAG,
         "createSearchablePdf: uri="
@@ -366,8 +410,13 @@ public class PdfCreator {
         }
         document.addPage(page);
 
-        // Fit image into page while preserving aspect ratio (letterboxing if needed)
-        float scale = calculateScale(prepared.getWidth(), prepared.getHeight(), pageW, pageH);
+        // Fit image into page while preserving aspect ratio (letterboxing if needed) — unless a
+        // known real-world physical size was supplied, in which case the image is placed at that
+        // exact true size (centered), never scaled to fit.
+        float scale =
+            (physicalSizeMm != null)
+                ? scaleForPhysicalSize(physicalSizeMm, prepared.getWidth())
+                : calculateScale(prepared.getWidth(), prepared.getHeight(), pageW, pageH);
         float drawW = prepared.getWidth() * scale;
         float drawH = prepared.getHeight() * scale;
         float offsetX = (pageW - drawW) / 2f;
@@ -924,6 +973,20 @@ public class PdfCreator {
     float sx = pageWidth / imageWidth;
     float sy = pageHeight / imageHeight;
     return Math.min(sx, sy);
+  }
+
+  private static final float POINTS_PER_MM = 72f / 25.4f;
+
+  /**
+   * Points-per-pixel scale that reproduces a bitmap at its declared real-world width, regardless
+   * of what DPI it was actually rendered at — i.e. {@code (widthMm in points) / pixelWidth}. Only
+   * the width is used since a correctly-warped physical-size bitmap already has the right aspect
+   * ratio; deriving the scale from one dimension avoids any rounding mismatch between width and
+   * height producing two slightly different scales.
+   */
+  private static float scaleForPhysicalSize(double[] physicalSizeMm, int pixelWidth) {
+    float widthPt = (float) (physicalSizeMm[0] * POINTS_PER_MM);
+    return widthPt / pixelWidth;
   }
 
   /**
@@ -1522,6 +1585,16 @@ public class PdfCreator {
     List<RecognizedWord> loadWords(int index);
 
     /**
+     * {@code {widthMm, heightMm}} if this page has a known real-world physical size (e.g. it was
+     * cropped via a known-document {@code CropAspectRatio} preset), or {@code null} to keep the
+     * default scale-to-fit-page placement. Default {@code null} for sources that don't track this.
+     */
+    @androidx.annotation.Nullable
+    default double[] getPhysicalSizeMm(int index) {
+      return null;
+    }
+
+    /**
      * Called exactly once after the page has been consumed (or rendering failed). Default
      * implementation recycles the bitmap.
      */
@@ -1690,6 +1763,12 @@ public class PdfCreator {
                 TAG, "Failed to load OCR words for page " + (i + 1) + "; exporting image only", t);
             pageWords = null;
           }
+          double[] pagePhysicalSizeMm;
+          try {
+            pagePhysicalSizeMm = source.getPhysicalSizeMm(i);
+          } catch (Throwable t) {
+            pagePhysicalSizeMm = null;
+          }
           rendered =
               renderPageIntoDocument(
                   document,
@@ -1705,7 +1784,8 @@ public class PdfCreator {
                   pageFormat,
                   cleanupMode,
                   textLayerMode,
-                  multiColumn);
+                  multiColumn,
+                  pagePhysicalSizeMm);
         } finally {
           // Ownership contract: the source releases the bitmap exactly once per page.
           try {
@@ -1760,7 +1840,8 @@ public class PdfCreator {
       PageFormat pageFormat,
       DocumentCleanupMode cleanupMode,
       TextLayerMode textLayerMode,
-      boolean multiColumn) {
+      boolean multiColumn,
+      @androidx.annotation.Nullable double[] physicalSizeMm) {
     Bitmap prepared = null;
     try {
       // Detect if text contains RTL scripts for gentle B/W processing
@@ -1797,7 +1878,10 @@ public class PdfCreator {
       }
       document.addPage(page);
 
-      float scale = calculateScale(prepared.getWidth(), prepared.getHeight(), pageW, pageH);
+      float scale =
+          (physicalSizeMm != null)
+              ? scaleForPhysicalSize(physicalSizeMm, prepared.getWidth())
+              : calculateScale(prepared.getWidth(), prepared.getHeight(), pageW, pageH);
       float drawW = prepared.getWidth() * scale;
       float drawH = prepared.getHeight() * scale;
       float offsetX = (pageW - drawW) / 2f;

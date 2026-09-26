@@ -166,7 +166,9 @@ public final class ScanPersister {
             "baked",
             inMemory.sourceType(),
             inMemory.pdfPageIndex(),
-            (ocrPath != null) ? CompletedScan.STATUS_OCR_COMPLETE : CompletedScan.STATUS_IMPORTED);
+            (ocrPath != null) ? CompletedScan.STATUS_OCR_COMPLETE : CompletedScan.STATUS_IMPORTED,
+            inMemory.physicalWidthMm(),
+            inMemory.physicalHeightMm());
     try {
       CompletedScansRegistry reg = CompletedScansRegistry.get(appContext);
       reg.insertOrReplace(persisted);
