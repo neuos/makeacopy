@@ -16,6 +16,7 @@ navigationFragment = "2.9.8"
 navigationUi = "2.9.8"
 # Added for MakeACopy
 camerax = "1.6.1"
+concurrentFutures = "1.2.0"
 roomRuntime = "2.8.4"
 tesseract = "4.9.0"
 lombok = "1.18.46"
@@ -59,6 +60,7 @@ camerax-core = { group = "androidx.camera", name = "camera-core", version.ref = 
 camerax-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
 camerax-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
 camerax-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
+concurrent-futures = { group = "androidx.concurrent", name = "concurrent-futures", version.ref = "concurrentFutures" }
 
 # Tesseract OCR dependency
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }

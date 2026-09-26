@@ -275,6 +275,10 @@ dependencies {
     implementation libs.camerax.camera2
     implementation libs.camerax.lifecycle
     implementation libs.camerax.view
+    // CameraX transitively depends on this for its ListenableFuture callback adapters
+    // (CallbackToFutureAdapter in CameraFragment); an explicit dependency is required here
+    // because release's R8 full-mode classpath doesn't resolve it as a transitive-only jar.
+    implementation libs.concurrent.futures
 
     // Tesseract OCR dependency (standard flavor only; paddle flavor must stay Tesseract-free)
     standardImplementation libs.tesseract
