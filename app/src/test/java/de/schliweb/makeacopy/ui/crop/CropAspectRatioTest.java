@@ -10,9 +10,12 @@
 package de.schliweb.makeacopy.ui.crop;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -88,15 +91,61 @@ public class CropAspectRatioTest {
   }
 
   @Test
+  public void physicalSizeMm_paperFormats_returnExactMm() {
+    assertEquals(297.0, CropAspectRatio.A3.physicalSizeMm()[0], EPS);
+    assertEquals(420.0, CropAspectRatio.A3.physicalSizeMm()[1], EPS);
+    assertEquals(210.0, CropAspectRatio.A4.physicalSizeMm()[0], EPS);
+    assertEquals(297.0, CropAspectRatio.A4.physicalSizeMm()[1], EPS);
+    assertEquals(148.0, CropAspectRatio.A5.physicalSizeMm()[0], EPS);
+    assertEquals(210.0, CropAspectRatio.A5.physicalSizeMm()[1], EPS);
+    assertEquals(215.9, CropAspectRatio.US_LETTER.physicalSizeMm()[0], EPS);
+    assertEquals(279.4, CropAspectRatio.US_LETTER.physicalSizeMm()[1], EPS);
+    assertEquals(215.9, CropAspectRatio.LEGAL.physicalSizeMm()[0], EPS);
+    assertEquals(355.6, CropAspectRatio.LEGAL.physicalSizeMm()[1], EPS);
+  }
+
+  @Test
   public void physicalSizeMm_everyOtherEntry_returnsNull() {
     for (CropAspectRatio v : CropAspectRatio.values()) {
       switch (v) {
         case ID1_CARD:
         case BUSINESS_CARD:
         case PASSPORT_TD3:
+        case A3:
+        case A4:
+        case A5:
+        case US_LETTER:
+        case LEGAL:
           break;
         default:
           assertNull("expected null physicalSizeMm() for " + v, v.physicalSizeMm());
+      }
+    }
+  }
+
+  @Test
+  public void shortOverLong_paperFormats_stillExactLegacyConstant() {
+    // physicalSizeMm() now also covers A3/A4/A5/US_LETTER/LEGAL, but their rounded mm dimensions
+    // give a ratio that is extremely close to, yet not bit-identical to, the exact constants
+    // (e.g. 210/297 != 1/sqrt(2)). shortOverLong() must keep returning the exact constant for
+    // these entries — physicalSizeMm() only feeds the new absolute-size warp/export path.
+    double dinA = 1.0 / Math.sqrt(2.0);
+    assertEquals(dinA, CropAspectRatio.A4.shortOverLong(), 0.0);
+    double[] a4Mm = CropAspectRatio.A4.physicalSizeMm();
+    double a4MmRatio = Math.min(a4Mm[0], a4Mm[1]) / Math.max(a4Mm[0], a4Mm[1]);
+    assertNotEquals(dinA, a4MmRatio, 0.0);
+  }
+
+  @Test
+  public void isRigidPhysicalSize_onlyTheThreeCardPresets() {
+    assertTrue(CropAspectRatio.ID1_CARD.isRigidPhysicalSize());
+    assertTrue(CropAspectRatio.BUSINESS_CARD.isRigidPhysicalSize());
+    assertTrue(CropAspectRatio.PASSPORT_TD3.isRigidPhysicalSize());
+    for (CropAspectRatio v : CropAspectRatio.values()) {
+      if (v != CropAspectRatio.ID1_CARD
+          && v != CropAspectRatio.BUSINESS_CARD
+          && v != CropAspectRatio.PASSPORT_TD3) {
+        assertFalse("expected non-rigid for " + v, v.isRigidPhysicalSize());
       }
     }
   }

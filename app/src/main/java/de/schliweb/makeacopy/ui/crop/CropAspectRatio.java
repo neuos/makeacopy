@@ -59,6 +59,16 @@ public enum CropAspectRatio {
   private static final double ID1_CARD_CORNER_RADIUS_MM = 3.18; // mid of ISO spec's 2.88-3.48mm
   private static final double[] BUSINESS_CARD_MM = {89.0, 51.0};
   private static final double[] PASSPORT_TD3_MM = {125.0, 88.0};
+  // ISO 216 / ANSI paper sizes. Their rounded mm dimensions give a short/long ratio that is
+  // extremely close to but not bit-identical to the exact irrational constants above (e.g.
+  // 210/297 ≈ 0.7070707 vs. the true 1/sqrt(2) ≈ 0.7071068) — shortOverLong() below deliberately
+  // keeps returning the exact constant for these entries; physicalSizeMm() is only consulted for
+  // the *absolute*-size warp/export path, not to redefine the long-standing ratio contract.
+  private static final double[] A3_MM = {297.0, 420.0};
+  private static final double[] A4_MM = {210.0, 297.0};
+  private static final double[] A5_MM = {148.0, 210.0};
+  private static final double[] US_LETTER_MM = {215.9, 279.4}; // 8.5 x 11in
+  private static final double[] LEGAL_MM = {215.9, 355.6}; // 8.5 x 14in
 
   /**
    * Returns the short/long edge ratio in {@code (0, 1]} for fixed entries. For {@link #AUTO},
@@ -67,10 +77,6 @@ public enum CropAspectRatio {
    */
   @Nullable
   public Double shortOverLong() {
-    double[] mm = physicalSizeMm();
-    if (mm != null) {
-      return Math.min(mm[0], mm[1]) / Math.max(mm[0], mm[1]);
-    }
     switch (this) {
       case A3:
       case A4:
@@ -80,18 +86,22 @@ public enum CropAspectRatio {
         return LETTER;
       case LEGAL:
         return LEGAL_R;
-      case AUTO:
-      case ORIGINAL:
-      case CUSTOM:
       default:
-        return null;
+        break;
     }
+    double[] mm = physicalSizeMm();
+    if (mm != null) {
+      return Math.min(mm[0], mm[1]) / Math.max(mm[0], mm[1]);
+    }
+    return null; // AUTO, ORIGINAL, CUSTOM
   }
 
   /**
-   * Returns the {@code {widthMm, heightMm}} absolute physical size for the known-document
-   * presets ({@link #ID1_CARD}, {@link #BUSINESS_CARD}, {@link #PASSPORT_TD3}), or {@code null}
-   * for every other entry (those only ever enforce a ratio, never an absolute size).
+   * Returns the {@code {widthMm, heightMm}} absolute physical size for every entry that has one
+   * — the rigid known-document presets ({@link #ID1_CARD}, {@link #BUSINESS_CARD}, {@link
+   * #PASSPORT_TD3}) and the fixed paper formats ({@link #A3}, {@link #A4}, {@link #A5}, {@link
+   * #US_LETTER}, {@link #LEGAL}) — or {@code null} for {@link #AUTO}, {@link #ORIGINAL} and
+   * {@link #CUSTOM}, which only ever enforce a ratio.
    */
   @Nullable
   public double[] physicalSizeMm() {
@@ -102,9 +112,30 @@ public enum CropAspectRatio {
         return BUSINESS_CARD_MM;
       case PASSPORT_TD3:
         return PASSPORT_TD3_MM;
+      case A3:
+        return A3_MM;
+      case A4:
+        return A4_MM;
+      case A5:
+        return A5_MM;
+      case US_LETTER:
+        return US_LETTER_MM;
+      case LEGAL:
+        return LEGAL_MM;
       default:
         return null;
     }
+  }
+
+  /**
+   * True for entries that describe a rigid, always-flat item (never a curved book page), where
+   * the crop step's curved-edges/dewarp mode is meaningless and should always be bypassed in
+   * favor of a plain flat warp to {@link #physicalSizeMm()}. {@link #A3}/{@link #A4}/{@link
+   * #A5}/{@link #US_LETTER}/{@link #LEGAL} are deliberately excluded — a paper document at one of
+   * those sizes can still be a curved book page, so those keep respecting dewarp mode.
+   */
+  public boolean isRigidPhysicalSize() {
+    return this == ID1_CARD || this == BUSINESS_CARD || this == PASSPORT_TD3;
   }
 
   /**
