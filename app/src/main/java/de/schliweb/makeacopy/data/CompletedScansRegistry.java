@@ -221,8 +221,10 @@ public final class CompletedScansRegistry {
         e.sourceType,
         e.pdfPageIndex,
         e.pageStatus,
-        e.physicalWidthMm,
-        e.physicalHeightMm);
+        (e.physicalWidthMm != null && e.physicalHeightMm != null)
+            ? new de.schliweb.makeacopy.utils.image.PhysicalSize(
+                e.physicalWidthMm, e.physicalHeightMm)
+            : null);
   }
 
   /**
@@ -250,8 +252,10 @@ public final class CompletedScansRegistry {
             s.sourceType(),
             s.pdfPageIndex(),
             s.pageStatus());
-    e.physicalWidthMm = s.physicalWidthMm();
-    e.physicalHeightMm = s.physicalHeightMm();
+    if (s.physicalSize() != null) {
+      e.physicalWidthMm = s.physicalSize().widthMm();
+      e.physicalHeightMm = s.physicalSize().heightMm();
+    }
     return e;
   }
 

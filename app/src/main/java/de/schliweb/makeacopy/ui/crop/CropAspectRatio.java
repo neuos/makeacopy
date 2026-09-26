@@ -10,6 +10,7 @@
 package de.schliweb.makeacopy.ui.crop;
 
 import androidx.annotation.Nullable;
+import de.schliweb.makeacopy.utils.image.PhysicalSize;
 
 /**
  * Aspect ratio choices for the crop step (stage B, see {@code
@@ -50,15 +51,15 @@ public enum CropAspectRatio {
   private static final double LETTER = 8.5 / 11.0; // ≈ 0.7727272727272727
   private static final double LEGAL_R = 8.5 / 14.0; // ≈ 0.6071428571428571
 
-  private static final double[] ID1_CARD_MM = {85.60, 53.98};
+  private static final PhysicalSize ID1_CARD_MM = new PhysicalSize(85.60, 53.98);
   private static final double ID1_CARD_CORNER_RADIUS_MM = 3.18; // mid of ISO spec's 2.88-3.48mm
-  private static final double[] BUSINESS_CARD_MM = {89.0, 51.0};
-  private static final double[] PASSPORT_TD3_MM = {125.0, 88.0};
-  private static final double[] A3_MM = {297.0, 420.0};
-  private static final double[] A4_MM = {210.0, 297.0};
-  private static final double[] A5_MM = {148.0, 210.0};
-  private static final double[] US_LETTER_MM = {215.9, 279.4}; // 8.5 x 11in
-  private static final double[] LEGAL_MM = {215.9, 355.6}; // 8.5 x 14in
+  private static final PhysicalSize BUSINESS_CARD_MM = new PhysicalSize(89.0, 51.0);
+  private static final PhysicalSize PASSPORT_TD3_MM = new PhysicalSize(125.0, 88.0);
+  private static final PhysicalSize A3_MM = new PhysicalSize(297.0, 420.0);
+  private static final PhysicalSize A4_MM = new PhysicalSize(210.0, 297.0);
+  private static final PhysicalSize A5_MM = new PhysicalSize(148.0, 210.0);
+  private static final PhysicalSize US_LETTER_MM = new PhysicalSize(215.9, 279.4); // 8.5 x 11in
+  private static final PhysicalSize LEGAL_MM = new PhysicalSize(215.9, 355.6); // 8.5 x 14in
 
   /**
    * Returns the short/long edge ratio in {@code (0, 1]} for fixed entries. For {@link #AUTO},
@@ -79,16 +80,13 @@ public enum CropAspectRatio {
       default:
         break;
     }
-    double[] mm = physicalSizeMm();
-    if (mm != null) {
-      return Math.min(mm[0], mm[1]) / Math.max(mm[0], mm[1]);
-    }
-    return null; // AUTO, ORIGINAL, CUSTOM
+    PhysicalSize size = physicalSizeMm();
+    return size != null ? size.shortOverLong() : null; // AUTO, ORIGINAL, CUSTOM
   }
 
-  /** Returns the {@code {widthMm, heightMm}} absolute physical size, or {@code null} if none. */
+  /** Returns the absolute physical size, or {@code null} if none. */
   @Nullable
-  public double[] physicalSizeMm() {
+  public PhysicalSize physicalSizeMm() {
     switch (this) {
       case ID1_CARD:
         return ID1_CARD_MM;

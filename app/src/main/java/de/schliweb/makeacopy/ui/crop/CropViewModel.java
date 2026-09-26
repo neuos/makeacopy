@@ -250,6 +250,13 @@ public class CropViewModel extends BaseViewModel {
    */
   @Setter @Getter private de.schliweb.makeacopy.utils.image.DewarpState lastAcceptedDewarp;
 
+  /**
+   * The physical size (mm) the last accepted crop was actually warped to, already oriented to
+   * match the selection quad; {@code null} unless the active {@link CropAspectRatio} has one.
+   */
+  @Setter @Getter
+  private de.schliweb.makeacopy.utils.image.PhysicalSize lastAcceptedPhysicalSizeMm;
+
   /** True when CropFragment was entered via the Re-Edit overlay in ExportFragment. */
   public LiveData<Boolean> isCameFromExport() {
     return cameFromExport;

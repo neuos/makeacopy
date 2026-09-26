@@ -82,26 +82,26 @@ public class CropAspectRatioTest {
 
   @Test
   public void physicalSizeMm_knownDocumentPresets_returnExactMm() {
-    assertEquals(85.60, CropAspectRatio.ID1_CARD.physicalSizeMm()[0], EPS);
-    assertEquals(53.98, CropAspectRatio.ID1_CARD.physicalSizeMm()[1], EPS);
-    assertEquals(89.0, CropAspectRatio.BUSINESS_CARD.physicalSizeMm()[0], EPS);
-    assertEquals(51.0, CropAspectRatio.BUSINESS_CARD.physicalSizeMm()[1], EPS);
-    assertEquals(125.0, CropAspectRatio.PASSPORT_TD3.physicalSizeMm()[0], EPS);
-    assertEquals(88.0, CropAspectRatio.PASSPORT_TD3.physicalSizeMm()[1], EPS);
+    assertEquals(85.60, CropAspectRatio.ID1_CARD.physicalSizeMm().widthMm(), EPS);
+    assertEquals(53.98, CropAspectRatio.ID1_CARD.physicalSizeMm().heightMm(), EPS);
+    assertEquals(89.0, CropAspectRatio.BUSINESS_CARD.physicalSizeMm().widthMm(), EPS);
+    assertEquals(51.0, CropAspectRatio.BUSINESS_CARD.physicalSizeMm().heightMm(), EPS);
+    assertEquals(125.0, CropAspectRatio.PASSPORT_TD3.physicalSizeMm().widthMm(), EPS);
+    assertEquals(88.0, CropAspectRatio.PASSPORT_TD3.physicalSizeMm().heightMm(), EPS);
   }
 
   @Test
   public void physicalSizeMm_paperFormats_returnExactMm() {
-    assertEquals(297.0, CropAspectRatio.A3.physicalSizeMm()[0], EPS);
-    assertEquals(420.0, CropAspectRatio.A3.physicalSizeMm()[1], EPS);
-    assertEquals(210.0, CropAspectRatio.A4.physicalSizeMm()[0], EPS);
-    assertEquals(297.0, CropAspectRatio.A4.physicalSizeMm()[1], EPS);
-    assertEquals(148.0, CropAspectRatio.A5.physicalSizeMm()[0], EPS);
-    assertEquals(210.0, CropAspectRatio.A5.physicalSizeMm()[1], EPS);
-    assertEquals(215.9, CropAspectRatio.US_LETTER.physicalSizeMm()[0], EPS);
-    assertEquals(279.4, CropAspectRatio.US_LETTER.physicalSizeMm()[1], EPS);
-    assertEquals(215.9, CropAspectRatio.LEGAL.physicalSizeMm()[0], EPS);
-    assertEquals(355.6, CropAspectRatio.LEGAL.physicalSizeMm()[1], EPS);
+    assertEquals(297.0, CropAspectRatio.A3.physicalSizeMm().widthMm(), EPS);
+    assertEquals(420.0, CropAspectRatio.A3.physicalSizeMm().heightMm(), EPS);
+    assertEquals(210.0, CropAspectRatio.A4.physicalSizeMm().widthMm(), EPS);
+    assertEquals(297.0, CropAspectRatio.A4.physicalSizeMm().heightMm(), EPS);
+    assertEquals(148.0, CropAspectRatio.A5.physicalSizeMm().widthMm(), EPS);
+    assertEquals(210.0, CropAspectRatio.A5.physicalSizeMm().heightMm(), EPS);
+    assertEquals(215.9, CropAspectRatio.US_LETTER.physicalSizeMm().widthMm(), EPS);
+    assertEquals(279.4, CropAspectRatio.US_LETTER.physicalSizeMm().heightMm(), EPS);
+    assertEquals(215.9, CropAspectRatio.LEGAL.physicalSizeMm().widthMm(), EPS);
+    assertEquals(355.6, CropAspectRatio.LEGAL.physicalSizeMm().heightMm(), EPS);
   }
 
   @Test
@@ -127,9 +127,7 @@ public class CropAspectRatioTest {
   public void shortOverLong_paperFormats_stillExactLegacyConstant() {
     double dinA = 1.0 / Math.sqrt(2.0);
     assertEquals(dinA, CropAspectRatio.A4.shortOverLong(), 0.0);
-    double[] a4Mm = CropAspectRatio.A4.physicalSizeMm();
-    double a4MmRatio = Math.min(a4Mm[0], a4Mm[1]) / Math.max(a4Mm[0], a4Mm[1]);
-    assertNotEquals(dinA, a4MmRatio, 0.0);
+    assertNotEquals(dinA, CropAspectRatio.A4.physicalSizeMm().shortOverLong(), 0.0);
   }
 
   @Test

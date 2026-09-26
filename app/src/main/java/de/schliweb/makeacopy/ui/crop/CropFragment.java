@@ -993,18 +993,16 @@ public class CropFragment extends Fragment {
       org.opencv.core.Point[] cornersForSource,
       de.schliweb.makeacopy.utils.image.DewarpModel dewarpModel) {
     final String LP = CROP_LOG;
+    lastWarpedPhysicalSizeMm = null;
     CropAspectRatio sel = CropPrefsHelper.getLastAspect(requireContext());
-    double[] physicalSizeMm = sel.physicalSizeMm();
+    de.schliweb.makeacopy.utils.image.PhysicalSize physicalSizeMm = sel.physicalSizeMm();
     if (physicalSizeMm != null && (sel.isRigidPhysicalSize() || dewarpModel == null)) {
       // Non-rigid physical-size formats (paper) still respect an active dewarp model, falling
       // through to the dewarp+ratio path below instead.
-      double longMm = Math.max(physicalSizeMm[0], physicalSizeMm[1]);
-      double shortMm = Math.min(physicalSizeMm[0], physicalSizeMm[1]);
-      boolean landscapeQuad = OpenCVUtils.isLandscapeQuad(cornersForSource);
-      int targetWidthPx =
-          OpenCVUtils.mmToPxAtPhysicalSizeDpi(landscapeQuad ? longMm : shortMm);
-      int targetHeightPx =
-          OpenCVUtils.mmToPxAtPhysicalSizeDpi(landscapeQuad ? shortMm : longMm);
+      physicalSizeMm = physicalSizeMm.orientedFor(cornersForSource);
+      lastWarpedPhysicalSizeMm = physicalSizeMm;
+      int targetWidthPx = OpenCVUtils.mmToPxAtPhysicalSizeDpi(physicalSizeMm.widthMm());
+      int targetHeightPx = OpenCVUtils.mmToPxAtPhysicalSizeDpi(physicalSizeMm.heightMm());
       android.util.Log.d(
           TAG,
           LP
@@ -1116,6 +1114,7 @@ public class CropFragment extends Fragment {
       cropViewModel.setLastAcceptedCornersOriginal(accepted);
       cropViewModel.setLastAcceptedUserRotationDeg(urDeg);
       cropViewModel.setLastAcceptedDewarp(acceptedDewarp);
+      cropViewModel.setLastAcceptedPhysicalSizeMm(lastWarpedPhysicalSizeMm);
     } catch (Throwable t) {
       android.util.Log.w(TAG, LP + "performCrop: persisting accepted corners failed: " + t);
     }
@@ -1555,6 +1554,14 @@ public class CropFragment extends Fragment {
 
   /** Bottom-edge counterpart of {@link #estimatedTopEdgeProfile}. */
   private double[] estimatedBottomEdgeProfile;
+
+  /**
+   * The physical size (mm) {@link #warp} actually warped to for the crop just performed, already
+   * oriented to the selection quad, or {@code null} when the active aspect has none. Set inside
+   * {@link #warp} and copied to {@link CropViewModel#setLastAcceptedPhysicalSizeMm} in {@link
+   * #onCropSucceeded}.
+   */
+  private de.schliweb.makeacopy.utils.image.PhysicalSize lastWarpedPhysicalSizeMm;
 
   /**
    * Wires up the perspective-depth slider (Issue #91, Phase 3). The slider maps its progress range

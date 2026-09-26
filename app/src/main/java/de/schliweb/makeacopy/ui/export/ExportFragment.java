@@ -34,8 +34,6 @@ import de.schliweb.makeacopy.R;
 import de.schliweb.makeacopy.data.library.ScansRepository;
 import de.schliweb.makeacopy.databinding.FragmentExportBinding;
 import de.schliweb.makeacopy.ui.camera.CameraViewModel;
-import de.schliweb.makeacopy.ui.crop.CropAspectRatio;
-import de.schliweb.makeacopy.ui.crop.CropPrefsHelper;
 import de.schliweb.makeacopy.ui.crop.CropViewModel;
 import de.schliweb.makeacopy.ui.export.session.CompletedScan;
 import de.schliweb.makeacopy.ui.ocr.OCRViewModel;
@@ -968,7 +966,7 @@ public class ExportFragment extends Fragment {
       // First time opening Export in this session: seed with current cropped bitmap if available
       if (initBmp != null) {
         CompletedScan initial =
-            newInMemoryPage(initBmp, currentUserRotation(), currentPhysicalSizeMm(context));
+            newInMemoryPage(initBmp, currentUserRotation(), currentPhysicalSizeMm());
         // Align the session id used by Review autosave to this export session id
         alignReviewSessionId(initial);
         activeSessionPageIndex = 0;
@@ -985,7 +983,7 @@ public class ExportFragment extends Fragment {
       // Avoid adding duplicates if the same bitmap reference is already present
       if (initBmp != null && !containsBitmap(currentPages, initBmp)) {
         CompletedScan added =
-            newInMemoryPage(initBmp, currentUserRotation(), currentPhysicalSizeMm(context));
+            newInMemoryPage(initBmp, currentUserRotation(), currentPhysicalSizeMm());
         // Keep SessionIds aligned to the last added page (so Review autosave per-page stays
         // consistent)
         alignReviewSessionId(added);
@@ -1012,9 +1010,7 @@ public class ExportFragment extends Fragment {
 
   /** Same as above, with the page's known physical size (mm) if it has one. */
   private static CompletedScan newInMemoryPage(
-      Bitmap bmp, int rotationDeg, @Nullable double[] physicalSizeMm) {
-    Double physicalWidthMm = physicalSizeMm != null ? physicalSizeMm[0] : null;
-    Double physicalHeightMm = physicalSizeMm != null ? physicalSizeMm[1] : null;
+      Bitmap bmp, int rotationDeg, @Nullable PhysicalSize physicalSize) {
     return new CompletedScan(
         UUID.randomUUID().toString(),
         null,
@@ -1031,8 +1027,7 @@ public class ExportFragment extends Fragment {
         null,
         CompletedScan.NO_PDF_PAGE,
         null,
-        physicalWidthMm,
-        physicalHeightMm);
+        physicalSize);
   }
 
   /** The user rotation from CropViewModel, normalized to [0, 360). */
@@ -1041,23 +1036,20 @@ public class ExportFragment extends Fragment {
     return deg != null ? ((deg % 360) + 360) % 360 : 0;
   }
 
-  /** The physical size (mm) of the {@link CropAspectRatio} last active in the crop step. */
+  /** The physical size (mm) the crop step actually warped the current bitmap to, if any. */
   @Nullable
-  private static double[] currentPhysicalSizeMm(Context context) {
-    return CropPrefsHelper.getLastAspect(context).physicalSizeMm();
+  private PhysicalSize currentPhysicalSizeMm() {
+    return cropViewModel.getLastAcceptedPhysicalSizeMm();
   }
 
   /** The physical size (mm) for a single-page export, preferring the page's own stored size. */
   @Nullable
-  private static double[] singlePagePhysicalSizeMm(
-      @Nullable List<CompletedScan> pages, Context context) {
+  private PhysicalSize singlePagePhysicalSizeMm(@Nullable List<CompletedScan> pages) {
     if (pages != null && !pages.isEmpty() && pages.get(0) != null) {
-      CompletedScan p = pages.get(0);
-      if (p.physicalWidthMm() != null && p.physicalHeightMm() != null) {
-        return new double[] {p.physicalWidthMm(), p.physicalHeightMm()};
-      }
+      PhysicalSize stored = pages.get(0).physicalSize();
+      if (stored != null) return stored;
     }
-    return currentPhysicalSizeMm(context);
+    return currentPhysicalSizeMm();
   }
 
   private void alignReviewSessionId(CompletedScan page) {
@@ -1692,7 +1684,7 @@ public class ExportFragment extends Fragment {
           cleanupMode,
           textLayerMode,
           MultiColumnOcrPrefs.isEnabled(appContext),
-          singlePagePhysicalSizeMm(pgsForPreset, appContext));
+          singlePagePhysicalSizeMm(pgsForPreset));
     }
 
     Log.d(TAG, "performExport: Creating PDF for multipage session (streaming)");
@@ -1805,21 +1797,15 @@ public class ExportFragment extends Fragment {
 
     @Override
     @Nullable
-    public double[] getPhysicalSizeMm(int index) {
+    public PhysicalSize getPhysicalSizeMm(int index) {
       CompletedScan s = pageSnapshot.get(index);
-      if (s == null || s.physicalWidthMm() == null || s.physicalHeightMm() == null) return null;
-      double w = s.physicalWidthMm();
-      double h = s.physicalHeightMm();
+      if (s == null || s.physicalSize() == null) return null;
       // Must mirror loadBitmap's rotation decision: a baked 90/270 also swaps the pixel dimensions.
       boolean loadedFromFile = s.inMemoryBitmap() == null && s.filePath() != null;
       int deg = ((s.rotationDeg() % 360) + 360) % 360;
-      if (RotationPolicy.shouldRotateForExport(loadedFromFile, s.orientationMode(), deg)
-          && (deg == 90 || deg == 270)) {
-        double swap = w;
-        w = h;
-        h = swap;
-      }
-      return new double[] {w, h};
+      return RotationPolicy.shouldRotateForExport(loadedFromFile, s.orientationMode(), deg)
+          ? s.physicalSize().rotated(deg)
+          : s.physicalSize();
     }
 
     @Override
@@ -2684,8 +2670,7 @@ public class ExportFragment extends Fragment {
                                   it.sourceType(),
                                   it.pdfPageIndex(),
                                   it.pageStatus(),
-                                  it.physicalWidthMm(),
-                                  it.physicalHeightMm());
+                                  it.physicalSize());
                           exportSessionViewModel.updateAt(i, updated);
                           break;
                         }

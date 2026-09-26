@@ -78,8 +78,7 @@ public final class SessionOcrUpdater {
                   persisted.sourceType(),
                   persisted.pdfPageIndex(),
                   persisted.pageStatus(),
-                  persisted.physicalWidthMm(),
-                  persisted.physicalHeightMm());
+                  persisted.physicalSize());
           sessionVM.updateAt(i, updated);
           break;
         }

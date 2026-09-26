@@ -30,6 +30,7 @@ import de.schliweb.makeacopy.utils.image.DocumentCleanupMode;
 import de.schliweb.makeacopy.utils.image.DocumentCleanupOptions;
 import de.schliweb.makeacopy.utils.image.DocumentCleanupProcessor;
 import de.schliweb.makeacopy.utils.image.OpenCVUtils;
+import de.schliweb.makeacopy.utils.image.PhysicalSize;
 import de.schliweb.makeacopy.utils.ocr.MultiColumnLayoutPolicy;
 import de.schliweb.makeacopy.utils.ocr.RecognizedWord;
 import java.io.OutputStream;
@@ -319,8 +320,8 @@ public class PdfCreator {
    * BwMode, PageFormat, DocumentCleanupMode, TextLayerMode, boolean)} that places the image on the
    * page at its true real-world size instead of scaling it to fit the page.
    *
-   * @param physicalSizeMm {@code {widthMm, heightMm}} of the bitmap's real-world size, or {@code
-   *     null} to keep the existing scale-to-fit-page behavior.
+   * @param physicalSizeMm the bitmap's real-world size, or {@code null} to keep the existing
+   *     scale-to-fit-page behavior.
    */
   public static Uri createSearchablePdf(
       Context context,
@@ -336,7 +337,7 @@ public class PdfCreator {
       DocumentCleanupMode cleanupMode,
       TextLayerMode textLayerMode,
       boolean multiColumn,
-      @androidx.annotation.Nullable double[] physicalSizeMm) {
+      @androidx.annotation.Nullable PhysicalSize physicalSizeMm) {
     Log.d(
         TAG,
         "createSearchablePdf: uri="
@@ -975,8 +976,8 @@ public class PdfCreator {
   private static final float POINTS_PER_MM = 72f / 25.4f;
 
   // Derived from width only; a correctly-warped physical-size bitmap already has the right ratio.
-  private static float scaleForPhysicalSize(double[] physicalSizeMm, int pixelWidth) {
-    float widthPt = (float) (physicalSizeMm[0] * POINTS_PER_MM);
+  private static float scaleForPhysicalSize(PhysicalSize physicalSizeMm, int pixelWidth) {
+    float widthPt = (float) (physicalSizeMm.widthMm() * POINTS_PER_MM);
     return widthPt / pixelWidth;
   }
 
@@ -1576,12 +1577,11 @@ public class PdfCreator {
     List<RecognizedWord> loadWords(int index);
 
     /**
-     * {@code {widthMm, heightMm}} if this page has a known real-world physical size (e.g. it was
-     * cropped via a known-document {@code CropAspectRatio} preset), or {@code null} to keep the
-     * default scale-to-fit-page placement. Default {@code null} for sources that don't track this.
+     * The page's known real-world physical size, or {@code null} to keep the default
+     * scale-to-fit-page placement. Default {@code null} for sources that don't track this.
      */
     @androidx.annotation.Nullable
-    default double[] getPhysicalSizeMm(int index) {
+    default PhysicalSize getPhysicalSizeMm(int index) {
       return null;
     }
 
@@ -1754,7 +1754,7 @@ public class PdfCreator {
                 TAG, "Failed to load OCR words for page " + (i + 1) + "; exporting image only", t);
             pageWords = null;
           }
-          double[] pagePhysicalSizeMm;
+          PhysicalSize pagePhysicalSizeMm;
           try {
             pagePhysicalSizeMm = source.getPhysicalSizeMm(i);
           } catch (Throwable t) {
@@ -1832,7 +1832,7 @@ public class PdfCreator {
       DocumentCleanupMode cleanupMode,
       TextLayerMode textLayerMode,
       boolean multiColumn,
-      @androidx.annotation.Nullable double[] physicalSizeMm) {
+      @androidx.annotation.Nullable PhysicalSize physicalSizeMm) {
     Bitmap prepared = null;
     try {
       // Detect if text contains RTL scripts for gentle B/W processing

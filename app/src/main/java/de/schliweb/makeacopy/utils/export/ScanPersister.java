@@ -150,15 +150,10 @@ public final class ScanPersister {
       /* leave as last successful */
     }
 
-    // Baking a 90/270 rotation into the pixels also swaps width/height; the physical size must
-    // follow the same swap to stay attached to the correct edge.
-    Double physicalWidthMm = inMemory.physicalWidthMm();
-    Double physicalHeightMm = inMemory.physicalHeightMm();
-    if ((deg == 90 || deg == 270) && physicalWidthMm != null && physicalHeightMm != null) {
-      Double swap = physicalWidthMm;
-      physicalWidthMm = physicalHeightMm;
-      physicalHeightMm = swap;
-    }
+    // Baking the rotation into the pixels also swaps width/height for 90/270; the physical size
+    // must follow the same swap to stay attached to the correct edge.
+    de.schliweb.makeacopy.utils.image.PhysicalSize physicalSize =
+        inMemory.physicalSize() != null ? inMemory.physicalSize().rotated(deg) : null;
     CompletedScan persisted =
         new CompletedScan(
             id,
@@ -176,8 +171,7 @@ public final class ScanPersister {
             inMemory.sourceType(),
             inMemory.pdfPageIndex(),
             (ocrPath != null) ? CompletedScan.STATUS_OCR_COMPLETE : CompletedScan.STATUS_IMPORTED,
-            physicalWidthMm,
-            physicalHeightMm);
+            physicalSize);
     try {
       CompletedScansRegistry reg = CompletedScansRegistry.get(appContext);
       reg.insertOrReplace(persisted);

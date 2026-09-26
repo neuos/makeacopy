@@ -165,8 +165,7 @@ public class RegistryCleaner {
                     s.sourceType(),
                     s.pdfPageIndex(),
                     s.pageStatus(),
-                    s.physicalWidthMm(),
-                    s.physicalHeightMm());
+                    s.physicalSize());
             try {
               reg.remove(s.id());
             } catch (IOException ignore) {
