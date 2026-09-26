@@ -68,8 +68,8 @@ public final class ScanPersister {
     }
     // Bake rotation before writing page and thumb
     Bitmap baked = bmp;
+    int deg = 0;
     try {
-      int deg = 0;
       try {
         deg = inMemory.rotationDeg();
       } catch (Throwable ignore) {
@@ -150,6 +150,15 @@ public final class ScanPersister {
       /* leave as last successful */
     }
 
+    // Baking a 90/270 rotation into the pixels also swaps width/height; the physical size must
+    // follow the same swap to stay attached to the correct edge.
+    Double physicalWidthMm = inMemory.physicalWidthMm();
+    Double physicalHeightMm = inMemory.physicalHeightMm();
+    if ((deg == 90 || deg == 270) && physicalWidthMm != null && physicalHeightMm != null) {
+      Double swap = physicalWidthMm;
+      physicalWidthMm = physicalHeightMm;
+      physicalHeightMm = swap;
+    }
     CompletedScan persisted =
         new CompletedScan(
             id,
@@ -167,8 +176,8 @@ public final class ScanPersister {
             inMemory.sourceType(),
             inMemory.pdfPageIndex(),
             (ocrPath != null) ? CompletedScan.STATUS_OCR_COMPLETE : CompletedScan.STATUS_IMPORTED,
-            inMemory.physicalWidthMm(),
-            inMemory.physicalHeightMm());
+            physicalWidthMm,
+            physicalHeightMm);
     try {
       CompletedScansRegistry reg = CompletedScansRegistry.get(appContext);
       reg.insertOrReplace(persisted);

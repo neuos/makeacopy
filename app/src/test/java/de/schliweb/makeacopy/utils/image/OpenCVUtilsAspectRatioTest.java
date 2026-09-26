@@ -10,6 +10,7 @@
 package de.schliweb.makeacopy.utils.image;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -275,5 +276,19 @@ public class OpenCVUtilsAspectRatioTest {
     assertEquals(1.0, s3.width, 0.0);
     Size s4 = fixed(ok, Double.NaN);
     assertEquals(1.0, s4.width, 0.0);
+  }
+
+  @Test
+  public void isLandscapeQuad_wideQuad_isTrue() {
+    Point[] c =
+        new Point[] {new Point(0, 0), new Point(1200, 0), new Point(1200, 700), new Point(0, 700)};
+    assertTrue(OpenCVUtils.isLandscapeQuad(c));
+  }
+
+  @Test
+  public void isLandscapeQuad_tallQuad_isFalse() {
+    Point[] c =
+        new Point[] {new Point(0, 0), new Point(800, 0), new Point(800, 1100), new Point(0, 1100)};
+    assertFalse(OpenCVUtils.isLandscapeQuad(c));
   }
 }

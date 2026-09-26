@@ -1056,7 +1056,6 @@ public class ExportFragment extends Fragment {
       if (p.physicalWidthMm() != null && p.physicalHeightMm() != null) {
         return new double[] {p.physicalWidthMm(), p.physicalHeightMm()};
       }
-      return null;
     }
     return currentPhysicalSizeMm(context);
   }
@@ -1809,7 +1808,18 @@ public class ExportFragment extends Fragment {
     public double[] getPhysicalSizeMm(int index) {
       CompletedScan s = pageSnapshot.get(index);
       if (s == null || s.physicalWidthMm() == null || s.physicalHeightMm() == null) return null;
-      return new double[] {s.physicalWidthMm(), s.physicalHeightMm()};
+      double w = s.physicalWidthMm();
+      double h = s.physicalHeightMm();
+      // Must mirror loadBitmap's rotation decision: a baked 90/270 also swaps the pixel dimensions.
+      boolean loadedFromFile = s.inMemoryBitmap() == null && s.filePath() != null;
+      int deg = ((s.rotationDeg() % 360) + 360) % 360;
+      if (RotationPolicy.shouldRotateForExport(loadedFromFile, s.orientationMode(), deg)
+          && (deg == 90 || deg == 270)) {
+        double swap = w;
+        w = h;
+        h = swap;
+      }
+      return new double[] {w, h};
     }
 
     @Override

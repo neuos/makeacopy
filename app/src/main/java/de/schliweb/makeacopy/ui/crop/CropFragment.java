@@ -998,8 +998,13 @@ public class CropFragment extends Fragment {
     if (physicalSizeMm != null && (sel.isRigidPhysicalSize() || dewarpModel == null)) {
       // Non-rigid physical-size formats (paper) still respect an active dewarp model, falling
       // through to the dewarp+ratio path below instead.
-      int targetWidthPx = OpenCVUtils.mmToPxAtPhysicalSizeDpi(physicalSizeMm[0]);
-      int targetHeightPx = OpenCVUtils.mmToPxAtPhysicalSizeDpi(physicalSizeMm[1]);
+      double longMm = Math.max(physicalSizeMm[0], physicalSizeMm[1]);
+      double shortMm = Math.min(physicalSizeMm[0], physicalSizeMm[1]);
+      boolean landscapeQuad = OpenCVUtils.isLandscapeQuad(cornersForSource);
+      int targetWidthPx =
+          OpenCVUtils.mmToPxAtPhysicalSizeDpi(landscapeQuad ? longMm : shortMm);
+      int targetHeightPx =
+          OpenCVUtils.mmToPxAtPhysicalSizeDpi(landscapeQuad ? shortMm : longMm);
       android.util.Log.d(
           TAG,
           LP

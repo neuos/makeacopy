@@ -2073,9 +2073,7 @@ public final class OpenCVUtils {
     /** v3.7.1 pixel-distance heuristic, no projective correction. */
     LEGACY_HEURISTIC,
     /** Enforce a user-supplied short/long edge ratio. */
-    FIXED_RATIO,
-    /** Enforce an absolute target pixel size. See {@link #applyPerspectiveCorrectionFixedSize}. */
-    FIXED_SIZE
+    FIXED_RATIO
   }
 
   /**
@@ -2114,13 +2112,11 @@ public final class OpenCVUtils {
     double wBottom = distance(corners[2], corners[3]);
     double hLeft = distance(corners[0], corners[3]);
     double hRight = distance(corners[1], corners[2]);
-    double meanW = 0.5 * (wTop + wBottom);
-    double meanH = 0.5 * (hLeft + hRight);
     double longPx = Math.max(Math.max(wTop, wBottom), Math.max(hLeft, hRight));
     if (longPx < 1.0) {
       return new Size(1, 1);
     }
-    boolean landscapeQuad = meanW >= meanH;
+    boolean landscapeQuad = isLandscapeQuad(corners);
     int w;
     int h;
     if (landscapeQuad) {
@@ -2351,6 +2347,13 @@ public final class OpenCVUtils {
    */
   private static double distance(Point a, Point b) {
     return Math.hypot(a.x - b.x, a.y - b.y);
+  }
+
+  /** True if the quad's mean width (TL-TR/BL-BR) is at least its mean height (TL-BL/TR-BR). */
+  public static boolean isLandscapeQuad(Point[] corners) {
+    double meanW = 0.5 * (distance(corners[0], corners[1]) + distance(corners[2], corners[3]));
+    double meanH = 0.5 * (distance(corners[0], corners[3]) + distance(corners[1], corners[2]));
+    return meanW >= meanH;
   }
 
   /**

@@ -168,6 +168,30 @@ public class PdfCreatorTest {
   }
 
   @Test
+  public void physicalSizeScaleIsClampedToNeverExceedFitToPageScale() throws Exception {
+    Method scaleForPhysicalSize =
+        PdfCreator.class.getDeclaredMethod("scaleForPhysicalSize", double[].class, int.class);
+    scaleForPhysicalSize.setAccessible(true);
+    Method calculateScale =
+        PdfCreator.class.getDeclaredMethod(
+            "calculateScale", int.class, int.class, float.class, float.class);
+    calculateScale.setAccessible(true);
+
+    // ID1_CARD on an A4 page: true size is smaller than the page, so it must win over fit-to-page.
+    float cardTrueScale =
+        (float) scaleForPhysicalSize.invoke(null, new double[] {85.60, 53.98}, 1011);
+    float cardFitScale = (float) calculateScale.invoke(null, 1011, 638, 595f, 842f);
+    assertTrue(cardTrueScale < cardFitScale);
+
+    // A3 content rendered onto an A4-sized page: true size would overflow the page, so the
+    // effective scale must fall back to (be clamped by) fit-to-page instead.
+    float a3TrueScale = (float) scaleForPhysicalSize.invoke(null, new double[] {297.0, 420.0}, 3508);
+    float a3FitScale = (float) calculateScale.invoke(null, 3508, 4961, 595f, 842f);
+    assertTrue(a3TrueScale > a3FitScale);
+    assertEquals(a3FitScale, Math.min(a3FitScale, a3TrueScale), 0.0001f);
+  }
+
+  @Test
   public void pdfBlackWhiteOutputUsesNonColorCleanupOptionsForAllCleanupModes() {
     for (DocumentCleanupMode mode : DocumentCleanupMode.values()) {
       DocumentCleanupOptions options =

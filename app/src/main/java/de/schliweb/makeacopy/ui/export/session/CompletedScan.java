@@ -252,27 +252,4 @@ public record CompletedScan(
         physicalWidthMm,
         physicalHeightMm);
   }
-
-  /** Returns a copy with the given physical size in mm; all other fields are preserved. */
-  public CompletedScan withPhysicalSizeMm(
-      @Nullable Double physicalWidthMm, @Nullable Double physicalHeightMm) {
-    return new CompletedScan(
-        id,
-        filePath,
-        rotationDeg,
-        ocrTextPath,
-        ocrFormat,
-        thumbPath,
-        createdAt,
-        widthPx,
-        heightPx,
-        inMemoryBitmap,
-        schemaVersion,
-        orientationMode,
-        sourceType,
-        pdfPageIndex,
-        pageStatus,
-        physicalWidthMm,
-        physicalHeightMm);
-  }
 }

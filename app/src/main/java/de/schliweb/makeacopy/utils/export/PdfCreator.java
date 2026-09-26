@@ -408,11 +408,12 @@ public class PdfCreator {
         document.addPage(page);
 
         // Fit image into page while preserving aspect ratio (letterboxing if needed), or place at
-        // true physical size if known
-        float scale =
-            (physicalSizeMm != null)
-                ? scaleForPhysicalSize(physicalSizeMm, prepared.getWidth())
-                : calculateScale(prepared.getWidth(), prepared.getHeight(), pageW, pageH);
+        // true physical size if known (never larger than fit-to-page, to avoid overflowing the
+        // page when the chosen PageFormat is smaller than the physical size)
+        float scale = calculateScale(prepared.getWidth(), prepared.getHeight(), pageW, pageH);
+        if (physicalSizeMm != null) {
+          scale = Math.min(scale, scaleForPhysicalSize(physicalSizeMm, prepared.getWidth()));
+        }
         float drawW = prepared.getWidth() * scale;
         float drawH = prepared.getHeight() * scale;
         float offsetX = (pageW - drawW) / 2f;
@@ -1868,10 +1869,10 @@ public class PdfCreator {
       }
       document.addPage(page);
 
-      float scale =
-          (physicalSizeMm != null)
-              ? scaleForPhysicalSize(physicalSizeMm, prepared.getWidth())
-              : calculateScale(prepared.getWidth(), prepared.getHeight(), pageW, pageH);
+      float scale = calculateScale(prepared.getWidth(), prepared.getHeight(), pageW, pageH);
+      if (physicalSizeMm != null) {
+        scale = Math.min(scale, scaleForPhysicalSize(physicalSizeMm, prepared.getWidth()));
+      }
       float drawW = prepared.getWidth() * scale;
       float drawH = prepared.getHeight() * scale;
       float offsetX = (pageW - drawW) / 2f;
