@@ -37,16 +37,11 @@ public enum CropAspectRatio {
   US_LETTER,
   /** US Legal, 8.5 : 14. */
   LEGAL,
-  /**
-   * ISO/IEC 7810 ID-1 (EU ID cards, driving licences, payment cards since ~2013). 85.60 x
-   * 53.98mm, rounded corners. Unlike the other fixed entries this also carries an absolute
-   * physical size (see {@link #physicalSizeMm()}) — the crop warps to this exact size in pixels
-   * at {@code OpenCVUtils.PHYSICAL_SIZE_DPI}, not just this ratio.
-   */
+  /** ISO/IEC 7810 ID-1, 85.60 x 53.98mm, rounded corners. */
   ID1_CARD,
-  /** Common business card size, 89 x 51mm. Square corners (unlike {@link #ID1_CARD}). */
+  /** Common business card size, 89 x 51mm. */
   BUSINESS_CARD,
-  /** ICAO Doc 9303 TD3 passport bio page, 125 x 88mm. Square corners. */
+  /** ICAO Doc 9303 TD3 passport bio page, 125 x 88mm. */
   PASSPORT_TD3,
   /** User-defined ratio; the actual numbers are stored via {@link CropPrefsHelper}. */
   CUSTOM;
@@ -59,11 +54,6 @@ public enum CropAspectRatio {
   private static final double ID1_CARD_CORNER_RADIUS_MM = 3.18; // mid of ISO spec's 2.88-3.48mm
   private static final double[] BUSINESS_CARD_MM = {89.0, 51.0};
   private static final double[] PASSPORT_TD3_MM = {125.0, 88.0};
-  // ISO 216 / ANSI paper sizes. Their rounded mm dimensions give a short/long ratio that is
-  // extremely close to but not bit-identical to the exact irrational constants above (e.g.
-  // 210/297 ≈ 0.7070707 vs. the true 1/sqrt(2) ≈ 0.7071068) — shortOverLong() below deliberately
-  // keeps returning the exact constant for these entries; physicalSizeMm() is only consulted for
-  // the *absolute*-size warp/export path, not to redefine the long-standing ratio contract.
   private static final double[] A3_MM = {297.0, 420.0};
   private static final double[] A4_MM = {210.0, 297.0};
   private static final double[] A5_MM = {148.0, 210.0};
@@ -96,13 +86,7 @@ public enum CropAspectRatio {
     return null; // AUTO, ORIGINAL, CUSTOM
   }
 
-  /**
-   * Returns the {@code {widthMm, heightMm}} absolute physical size for every entry that has one
-   * — the rigid known-document presets ({@link #ID1_CARD}, {@link #BUSINESS_CARD}, {@link
-   * #PASSPORT_TD3}) and the fixed paper formats ({@link #A3}, {@link #A4}, {@link #A5}, {@link
-   * #US_LETTER}, {@link #LEGAL}) — or {@code null} for {@link #AUTO}, {@link #ORIGINAL} and
-   * {@link #CUSTOM}, which only ever enforce a ratio.
-   */
+  /** Returns the {@code {widthMm, heightMm}} absolute physical size, or {@code null} if none. */
   @Nullable
   public double[] physicalSizeMm() {
     switch (this) {
@@ -127,21 +111,12 @@ public enum CropAspectRatio {
     }
   }
 
-  /**
-   * True for entries that describe a rigid, always-flat item (never a curved book page), where
-   * the crop step's curved-edges/dewarp mode is meaningless and should always be bypassed in
-   * favor of a plain flat warp to {@link #physicalSizeMm()}. {@link #A3}/{@link #A4}/{@link
-   * #A5}/{@link #US_LETTER}/{@link #LEGAL} are deliberately excluded — a paper document at one of
-   * those sizes can still be a curved book page, so those keep respecting dewarp mode.
-   */
+  /** True for rigid, always-flat items where dewarp mode never applies. */
   public boolean isRigidPhysicalSize() {
     return this == ID1_CARD || this == BUSINESS_CARD || this == PASSPORT_TD3;
   }
 
-  /**
-   * Returns the corner radius in mm to cosmetically round the warped output to, or {@code 0} for
-   * entries with square corners (including every non-physical-size entry).
-   */
+  /** Returns the corner radius in mm to round the warped output to, or {@code 0} for square. */
   public double cornerRadiusMm() {
     return this == ID1_CARD ? ID1_CARD_CORNER_RADIUS_MM : 0.0;
   }

@@ -1010,12 +1010,7 @@ public class ExportFragment extends Fragment {
     return newInMemoryPage(bmp, rotationDeg, null);
   }
 
-  /**
-   * A not yet persisted page that only lives in memory (orientation mode "metadata"). {@code
-   * physicalSizeMm}, when non-null, is the {@code {widthMm, heightMm}} the page was cropped to via
-   * a {@link CropAspectRatio} physical-size preset (e.g. {@link CropAspectRatio#ID1_CARD}) —
-   * carried through to export so the PDF page can place it at true size.
-   */
+  /** Same as above, with the page's known physical size (mm) if it has one. */
   private static CompletedScan newInMemoryPage(
       Bitmap bmp, int rotationDeg, @Nullable double[] physicalSizeMm) {
     Double physicalWidthMm = physicalSizeMm != null ? physicalSizeMm[0] : null;
@@ -1046,23 +1041,13 @@ public class ExportFragment extends Fragment {
     return deg != null ? ((deg % 360) + 360) % 360 : 0;
   }
 
-  /**
-   * The {@code {widthMm, heightMm}} of the {@link CropAspectRatio} that was active for the crop
-   * step this page just came from, or {@code null} if it wasn't one of the known-document
-   * physical-size presets (e.g. {@link CropAspectRatio#ID1_CARD}). Reads the same
-   * last-selected-aspect preference the crop step itself just resolved to perform the warp.
-   */
+  /** The physical size (mm) of the {@link CropAspectRatio} last active in the crop step. */
   @Nullable
   private static double[] currentPhysicalSizeMm(Context context) {
     return CropPrefsHelper.getLastAspect(context).physicalSizeMm();
   }
 
-  /**
-   * The physical size (mm) for a single-page export: prefers the actual page's stored {@link
-   * CompletedScan#physicalWidthMm()}/{@link CompletedScan#physicalHeightMm()} (correct even if
-   * export happens well after crop, e.g. a resumed session), falling back to the current crop
-   * aspect preference only if no page is available yet.
-   */
+  /** The physical size (mm) for a single-page export, preferring the page's own stored size. */
   @Nullable
   private static double[] singlePagePhysicalSizeMm(
       @Nullable List<CompletedScan> pages, Context context) {

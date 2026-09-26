@@ -125,10 +125,6 @@ public class CropAspectRatioTest {
 
   @Test
   public void shortOverLong_paperFormats_stillExactLegacyConstant() {
-    // physicalSizeMm() now also covers A3/A4/A5/US_LETTER/LEGAL, but their rounded mm dimensions
-    // give a ratio that is extremely close to, yet not bit-identical to, the exact constants
-    // (e.g. 210/297 != 1/sqrt(2)). shortOverLong() must keep returning the exact constant for
-    // these entries — physicalSizeMm() only feeds the new absolute-size warp/export path.
     double dinA = 1.0 / Math.sqrt(2.0);
     assertEquals(dinA, CropAspectRatio.A4.shortOverLong(), 0.0);
     double[] a4Mm = CropAspectRatio.A4.physicalSizeMm();

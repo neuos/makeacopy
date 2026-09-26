@@ -996,14 +996,8 @@ public class CropFragment extends Fragment {
     CropAspectRatio sel = CropPrefsHelper.getLastAspect(requireContext());
     double[] physicalSizeMm = sel.physicalSizeMm();
     if (physicalSizeMm != null && (sel.isRigidPhysicalSize() || dewarpModel == null)) {
-      // Rigid presets (ID1_CARD, BUSINESS_CARD, PASSPORT_TD3) are always flat, so curved dewarping
-      // never applies to them regardless of `dewarpModel`. The fixed paper formats (A3/A4/A5/
-      // US_LETTER/LEGAL) also have an absolute size, but a paper document can still be a curved
-      // book page — for those, only take this flat true-size path when no dewarp model is active;
-      // an active curved selection falls through to the existing dewarp+ratio path below instead,
-      // unchanged. Either way: warp straight to the item's exact real-world pixel size, then
-      // cosmetically round the corners if the preset calls for it (ID1_CARD only; every other
-      // preset here is square-cornered, see cornerRadiusMm()).
+      // Non-rigid physical-size formats (paper) still respect an active dewarp model, falling
+      // through to the dewarp+ratio path below instead.
       int targetWidthPx = OpenCVUtils.mmToPxAtPhysicalSizeDpi(physicalSizeMm[0]);
       int targetHeightPx = OpenCVUtils.mmToPxAtPhysicalSizeDpi(physicalSizeMm[1]);
       android.util.Log.d(

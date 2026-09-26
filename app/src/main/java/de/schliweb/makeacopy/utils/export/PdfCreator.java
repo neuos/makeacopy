@@ -319,11 +319,8 @@ public class PdfCreator {
    * BwMode, PageFormat, DocumentCleanupMode, TextLayerMode, boolean)} that places the image on the
    * page at its true real-world size instead of scaling it to fit the page.
    *
-   * @param physicalSizeMm {@code {widthMm, heightMm}} of the source bitmap's real-world size (see
-   *     {@code de.schliweb.makeacopy.ui.crop.CropAspectRatio#physicalSizeMm()}); the placement
-   *     scale is derived directly from {@code widthMm} and the bitmap's own pixel width, so this
-   *     works regardless of what DPI the bitmap was actually rendered at. {@code null} keeps the
-   *     existing scale-to-fit-page behavior.
+   * @param physicalSizeMm {@code {widthMm, heightMm}} of the bitmap's real-world size, or {@code
+   *     null} to keep the existing scale-to-fit-page behavior.
    */
   public static Uri createSearchablePdf(
       Context context,
@@ -410,9 +407,8 @@ public class PdfCreator {
         }
         document.addPage(page);
 
-        // Fit image into page while preserving aspect ratio (letterboxing if needed) — unless a
-        // known real-world physical size was supplied, in which case the image is placed at that
-        // exact true size (centered), never scaled to fit.
+        // Fit image into page while preserving aspect ratio (letterboxing if needed), or place at
+        // true physical size if known
         float scale =
             (physicalSizeMm != null)
                 ? scaleForPhysicalSize(physicalSizeMm, prepared.getWidth())
@@ -977,13 +973,7 @@ public class PdfCreator {
 
   private static final float POINTS_PER_MM = 72f / 25.4f;
 
-  /**
-   * Points-per-pixel scale that reproduces a bitmap at its declared real-world width, regardless
-   * of what DPI it was actually rendered at — i.e. {@code (widthMm in points) / pixelWidth}. Only
-   * the width is used since a correctly-warped physical-size bitmap already has the right aspect
-   * ratio; deriving the scale from one dimension avoids any rounding mismatch between width and
-   * height producing two slightly different scales.
-   */
+  // Derived from width only; a correctly-warped physical-size bitmap already has the right ratio.
   private static float scaleForPhysicalSize(double[] physicalSizeMm, int pixelWidth) {
     float widthPt = (float) (physicalSizeMm[0] * POINTS_PER_MM);
     return widthPt / pixelWidth;

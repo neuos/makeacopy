@@ -253,12 +253,7 @@ public record CompletedScan(
         physicalHeightMm);
   }
 
-  /**
-   * Returns a copy with the given known-document physical size in mm (e.g. from {@link
-   * de.schliweb.makeacopy.ui.crop.CropAspectRatio#physicalSizeMm()}), or {@code null}/{@code null}
-   * to clear it; all other fields are preserved. See the compact constructor for normalization
-   * (a size needs both dimensions or neither).
-   */
+  /** Returns a copy with the given physical size in mm; all other fields are preserved. */
   public CompletedScan withPhysicalSizeMm(
       @Nullable Double physicalWidthMm, @Nullable Double physicalHeightMm) {
     return new CompletedScan(
