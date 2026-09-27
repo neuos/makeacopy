@@ -140,8 +140,7 @@ public record CompletedScan(
       // re-startable via OCR_PENDING.
       pageStatus = (ocrTextPath != null) ? STATUS_OCR_COMPLETE : STATUS_OCR_PENDING;
     }
-    if (physicalSize != null
-        && !(physicalSize.widthMm() > 0.0 && physicalSize.heightMm() > 0.0)) {
+    if (physicalSize != null && !(physicalSize.widthMm() > 0.0 && physicalSize.heightMm() > 0.0)) {
       physicalSize = null;
     }
   }

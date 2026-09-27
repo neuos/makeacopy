@@ -490,6 +490,9 @@
     <string name="crop_aspect_label">نسبت تصویر</string>
     <string name="crop_aspect_auto">خودکار (توصیه‌شده)</string>
     <string name="crop_aspect_original">حفظ اصل (بدون اصلاح نسبت)</string>
+    <string name="crop_aspect_id1_card">کارت شناسایی (85.6 × 54 میلی‌متر)</string>
+    <string name="crop_aspect_business_card">کارت ویزیت (89 × 51 میلی‌متر)</string>
+    <string name="crop_aspect_passport_td3">صفحه پاسپورت (125 × 88 میلی‌متر)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

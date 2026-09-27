@@ -496,6 +496,9 @@
     <string name="crop_aspect_label">Proporcje</string>
     <string name="crop_aspect_auto">Auto (zalecane)</string>
     <string name="crop_aspect_original">Zachowaj oryginał (bez korekcji)</string>
+    <string name="crop_aspect_id1_card">Dowód osobisty (85,6 × 54 mm)</string>
+    <string name="crop_aspect_business_card">Wizytówka (89 × 51 mm)</string>
+    <string name="crop_aspect_passport_td3">Strona paszportu (125 × 88 mm)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

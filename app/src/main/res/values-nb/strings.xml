@@ -490,6 +490,9 @@
     <string name="crop_aspect_label">Sideforhold</string>
     <string name="crop_aspect_auto">Auto (anbefalt)</string>
     <string name="crop_aspect_original">Behold original (ingen korrigering)</string>
+    <string name="crop_aspect_id1_card">ID-kort (85,6 × 54 mm)</string>
+    <string name="crop_aspect_business_card">Visittkort (89 × 51 mm)</string>
+    <string name="crop_aspect_passport_td3">Passside (125 × 88 mm)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

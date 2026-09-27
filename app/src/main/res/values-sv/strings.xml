@@ -490,6 +490,9 @@
     <string name="crop_aspect_label">Bildförhållande</string>
     <string name="crop_aspect_auto">Auto (rekommenderas)</string>
     <string name="crop_aspect_original">Behåll original (ingen korrigering)</string>
+    <string name="crop_aspect_id1_card">ID-kort (85,6 × 54 mm)</string>
+    <string name="crop_aspect_business_card">Visitkort (89 × 51 mm)</string>
+    <string name="crop_aspect_passport_td3">Passida (125 × 88 mm)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

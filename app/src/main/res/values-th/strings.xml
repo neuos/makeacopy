@@ -487,6 +487,9 @@
     <string name="crop_aspect_label">อัตราส่วนภาพ</string>
     <string name="crop_aspect_auto">อัตโนมัติ (แนะนำ)</string>
     <string name="crop_aspect_original">คงต้นฉบับไว้ (ไม่ปรับอัตราส่วน)</string>
+    <string name="crop_aspect_id1_card">บัตรประจำตัว (85.6 × 54 มม.)</string>
+    <string name="crop_aspect_business_card">นามบัตร (89 × 51 มม.)</string>
+    <string name="crop_aspect_passport_td3">หน้าพาสปอร์ต (125 × 88 มม.)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

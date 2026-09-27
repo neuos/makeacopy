@@ -493,6 +493,9 @@
     <string name="crop_aspect_label">Képarány</string>
     <string name="crop_aspect_auto">Automatikus (ajánlott)</string>
     <string name="crop_aspect_original">Eredeti megtartása (nincs korrekció)</string>
+    <string name="crop_aspect_id1_card">Személyi igazolvány (85,6 × 54 mm)</string>
+    <string name="crop_aspect_business_card">Névjegykártya (89 × 51 mm)</string>
+    <string name="crop_aspect_passport_td3">Útlevél oldal (125 × 88 mm)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

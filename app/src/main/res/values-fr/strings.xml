@@ -496,6 +496,9 @@
     <string name="crop_aspect_label">Format d’image</string>
     <string name="crop_aspect_auto">Auto (recommandé)</string>
     <string name="crop_aspect_original">Conserver l’original (sans correction)</string>
+    <string name="crop_aspect_id1_card">Carte d’identité (85,6 × 54 mm)</string>
+    <string name="crop_aspect_business_card">Carte de visite (89 × 51 mm)</string>
+    <string name="crop_aspect_passport_td3">Page de passeport (125 × 88 mm)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

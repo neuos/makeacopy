@@ -471,6 +471,9 @@
     <string name="crop_aspect_label">宽高比</string>
     <string name="crop_aspect_auto">自动（推荐）</string>
     <string name="crop_aspect_original">保持原始（不校正比例）</string>
+    <string name="crop_aspect_id1_card">身份证（85.6 × 54毫米）</string>
+    <string name="crop_aspect_business_card">名片（89 × 51毫米）</string>
+    <string name="crop_aspect_passport_td3">护照页（125 × 88毫米）</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

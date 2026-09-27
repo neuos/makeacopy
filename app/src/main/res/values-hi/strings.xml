@@ -469,6 +469,9 @@
     <string name="crop_aspect_label">आस्पेक्ट रेशियो</string>
     <string name="crop_aspect_auto">ऑटो (अनुशंसित)</string>
     <string name="crop_aspect_original">मूल रखें (बिना सुधार)</string>
+    <string name="crop_aspect_id1_card">पहचान पत्र (85.6 × 54 मिमी)</string>
+    <string name="crop_aspect_business_card">विज़िटिंग कार्ड (89 × 51 मिमी)</string>
+    <string name="crop_aspect_passport_td3">पासपोर्ट पेज (125 × 88 मिमी)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

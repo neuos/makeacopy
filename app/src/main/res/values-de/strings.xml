@@ -507,6 +507,9 @@
     <string name="crop_aspect_label">Seitenverhältnis</string>
     <string name="crop_aspect_auto">Automatisch (empfohlen)</string>
     <string name="crop_aspect_original">Original belassen (keine Korrektur)</string>
+    <string name="crop_aspect_id1_card">Personalausweis (85,6 × 54 mm)</string>
+    <string name="crop_aspect_business_card">Visitenkarte (89 × 51 mm)</string>
+    <string name="crop_aspect_passport_td3">Reisepass-Seite (125 × 88 mm)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

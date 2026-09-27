@@ -2077,11 +2077,11 @@ public final class OpenCVUtils {
   }
 
   /**
-   * Fixed DPI used to convert a known document's real-world millimeter size (e.g. an
-   * ISO/IEC 7810 ID-1 card) into a target pixel size for {@link #applyPerspectiveCorrectionFixedSize}.
-   * 300 DPI matches this app's existing {@code PdfQualityPreset.HIGH} export convention, so a card
-   * cropped at this DPI and later placed on a PDF page at true size (72pt/in ÷ this DPI) reproduces
-   * at exactly its real-world dimensions.
+   * Fixed DPI used to convert a known document's real-world millimeter size (e.g. an ISO/IEC 7810
+   * ID-1 card) into a target pixel size for {@link #applyPerspectiveCorrectionFixedSize}. 300 DPI
+   * matches this app's existing {@code PdfQualityPreset.HIGH} export convention, so a card cropped
+   * at this DPI and later placed on a PDF page at true size (72pt/in ÷ this DPI) reproduces at
+   * exactly its real-world dimensions.
    */
   public static final int PHYSICAL_SIZE_DPI = 300;
 

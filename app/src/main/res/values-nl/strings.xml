@@ -496,6 +496,9 @@
     <string name="crop_aspect_label">Beeldverhouding</string>
     <string name="crop_aspect_auto">Automatisch (aanbevolen)</string>
     <string name="crop_aspect_original">Origineel behouden (geen correctie)</string>
+    <string name="crop_aspect_id1_card">ID-kaart (85,6 × 54 mm)</string>
+    <string name="crop_aspect_business_card">Visitekaartje (89 × 51 mm)</string>
+    <string name="crop_aspect_passport_td3">Paspoortpagina (125 × 88 mm)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

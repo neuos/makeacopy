@@ -496,6 +496,9 @@
     <string name="crop_aspect_label">Соотношение сторон</string>
     <string name="crop_aspect_auto">Авто (рекомендуется)</string>
     <string name="crop_aspect_original">Оставить оригинал (без коррекции)</string>
+    <string name="crop_aspect_id1_card">Удостоверение личности (85,6 × 54 мм)</string>
+    <string name="crop_aspect_business_card">Визитная карточка (89 × 51 мм)</string>
+    <string name="crop_aspect_passport_td3">Страница паспорта (125 × 88 мм)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

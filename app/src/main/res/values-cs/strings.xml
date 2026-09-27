@@ -495,6 +495,9 @@
     <string name="crop_aspect_label">Poměr stran</string>
     <string name="crop_aspect_auto">Auto (doporučeno)</string>
     <string name="crop_aspect_original">Zachovat originál (bez korekce poměru)</string>
+    <string name="crop_aspect_id1_card">Občanský průkaz (85,6 × 54 mm)</string>
+    <string name="crop_aspect_business_card">Vizitka (89 × 51 mm)</string>
+    <string name="crop_aspect_passport_td3">Strana cestovního pasu (125 × 88 mm)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

@@ -469,6 +469,9 @@
     <string name="crop_aspect_label">Αναλογία διαστάσεων</string>
     <string name="crop_aspect_auto">Αυτόματο (συνιστάται)</string>
     <string name="crop_aspect_original">Διατήρηση αρχικού (χωρίς διόρθωση αναλογίας)</string>
+    <string name="crop_aspect_id1_card">Δελτίο ταυτότητας (85,6 × 54 mm)</string>
+    <string name="crop_aspect_business_card">Επαγγελματική κάρτα (89 × 51 mm)</string>
+    <string name="crop_aspect_passport_td3">Σελίδα διαβατηρίου (125 × 88 mm)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>

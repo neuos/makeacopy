@@ -487,6 +487,9 @@
     <string name="crop_aspect_label">نسبة العرض إلى الارتفاع</string>
     <string name="crop_aspect_auto">تلقائي (موصى به)</string>
     <string name="crop_aspect_original">الإبقاء على الأصل (بدون تصحيح النسبة)</string>
+    <string name="crop_aspect_id1_card">بطاقة الهوية (85.6 × 54 مم)</string>
+    <string name="crop_aspect_business_card">بطاقة العمل (89 × 51 مم)</string>
+    <string name="crop_aspect_passport_td3">صفحة جواز السفر (125 × 88 مم)</string>
     <string name="crop_aspect_a3">A3</string>
     <string name="crop_aspect_a4">A4</string>
     <string name="crop_aspect_a5">A5</string>
