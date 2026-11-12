@@ -1289,7 +1289,8 @@ public class CropFragment extends Fragment {
                             old.orientationMode(),
                             old.sourceType(),
                             old.pdfPageIndex(),
-                            de.schliweb.makeacopy.ui.export.session.CompletedScan.STATUS_IMPORTED);
+                            de.schliweb.makeacopy.ui.export.session.CompletedScan.STATUS_IMPORTED,
+                            cropViewModel.getLastAcceptedPhysicalSizeMm());
                     sessionVm.updateAt(idx, replacement);
                     // Session 3: re-persist the edited page under the SAME id (page.jpg/thumb.jpg
                     // replaced, stale OCR artifacts deleted, registry entry updated) so the

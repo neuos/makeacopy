@@ -3046,7 +3046,8 @@ public class ExportFragment extends Fragment {
                 it.orientationMode(),
                 it.sourceType(),
                 it.pdfPageIndex(),
-                CompletedScan.STATUS_OCR_FAILED));
+                CompletedScan.STATUS_OCR_FAILED,
+                it.physicalSize()));
         break;
       }
     }
